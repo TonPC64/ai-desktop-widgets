@@ -55,18 +55,7 @@ case "$WIDGETS" in
     ;;
 esac
 
-# This installer no longer creates agents, but retain the legacy warning so a
-# restrictive managed Mac does not turn installation into a hard failure.
-if [ -e "$HOME/Library/LaunchAgents" ] && [ ! -w "$HOME/Library/LaunchAgents" ]; then
-  echo "warning: ~/Library/LaunchAgents is not writable; continuing without LaunchAgent changes" >&2
-fi
-
 mkdir -p "$RUNTIME/scripts" "$WIDGET_DIR"
-for widget in claude copilot codex agy; do
-  if [[ " ${selected[*]} " != *" $widget "* ]]; then
-    rm -rf "$WIDGET_DIR/${widget}-status.widget"
-  fi
-done
 runtime_files=()
 for widget in "${selected[@]}"; do
   case "$widget" in
@@ -77,12 +66,6 @@ for widget in "${selected[@]}"; do
   esac
 done
 
-# Prune only files owned by this installer, so changing widget selections does
-# not leave collectors for an unselected widget behind.
-for file in widget-data.sh claude-status.sh claude-week.sh status.js pet-hook.sh \
-  install-pet-hooks.js copilot-data.sh codex-data.sh codex-data.js agy-data.sh install.sh; do
-  rm -f "$RUNTIME/scripts/$file"
-done
 for file in "${runtime_files[@]}"; do
   install -m 755 "$ROOT/scripts/$file" "$RUNTIME/scripts/$file"
 done

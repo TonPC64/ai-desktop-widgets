@@ -45,7 +45,7 @@ bash scripts/install.sh --widgets agy
 bash scripts/install.sh --widgets all
 ```
 
-Run the same command again to change the selection. `--widgets claude,copilot,agy` is also supported.
+Run additional commands to install more widgets; existing widgets and runtime files are preserved. `--widgets claude,copilot,agy` is also supported.
 
 ## Data and privacy
 
