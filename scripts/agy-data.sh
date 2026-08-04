@@ -1,13 +1,16 @@
 #!/bin/bash
 # agy-data.sh — Antigravity CLI data collector for the Übersicht desktop widget.
-# Reads ~/.gemini/antigravity-cli local data and emits a JSON blob.
-# No network calls; entirely local.
+# Uses the macOS system Python — no nvm/asdf shims — safe for Übersicht.
 
-set -euo pipefail
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin"
 
+AGY_DIR="${HOME}/.gemini/antigravity-cli"
+HISTORY="${AGY_DIR}/history.jsonl"
+META="${AGY_DIR}/cache/conversation_metadata.json"
+SETTINGS="${AGY_DIR}/settings.json"
 CACHE_DIR="${HOME}/.cache/agy-widget"
 CACHE_FILE="${CACHE_DIR}/data.json"
-CACHE_TTL=15  # seconds
+CACHE_TTL=15
 
 mkdir -p "$CACHE_DIR"
 
@@ -20,93 +23,92 @@ if [ -f "$CACHE_FILE" ]; then
   fi
 fi
 
-python3 - > "$CACHE_FILE" <<'PYEOF'
-import json, os
-from datetime import datetime, timezone
+# --- parse local data with macOS's system Python ---
+now_ms=$(( $(date +%s) * 1000 ))
+slot_ms=1800000
+start_slot=$(( (now_ms / slot_ms - 47) * slot_ms ))
+SYSPYTHON=/usr/bin/python3
 
-AGY_DIR   = os.path.expanduser("~/.gemini/antigravity-cli")
-HISTORY   = os.path.join(AGY_DIR, "history.jsonl")
-META      = os.path.join(AGY_DIR, "cache", "conversation_metadata.json")
-SETTINGS  = os.path.join(AGY_DIR, "settings.json")
+"$SYSPYTHON" - "$HISTORY" "$META" "$SETTINGS" "$CACHE_FILE" "$now_ms" "$slot_ms" "$start_slot" <<'PYEOF'
+import sys, json
 
-now_ms = datetime.now(timezone.utc).timestamp() * 1000
+history_path, meta_path, settings_path, cache_file, now_ms_s, slot_ms_s, start_slot_s = sys.argv[1:]
+now_ms     = int(now_ms_s)
+slot_ms    = int(slot_ms_s)
+start_slot = int(start_slot_s)
 
-# --- history ---
+since24 = now_ms - 86_400_000
+since7d = now_ms - 7 * 86_400_000
+
+# history
 entries = []
 try:
-    with open(HISTORY) as f:
+    with open(history_path) as f:
         for line in f:
             line = line.strip()
             if line:
                 try: entries.append(json.loads(line))
                 except: pass
-except Exception: pass
+except: pass
 
-# --- settings ---
 settings = {}
 try:
-    with open(SETTINGS) as f: settings = json.load(f)
-except Exception: pass
+    with open(settings_path) as f: settings = json.load(f)
+except: pass
 
-# --- conversation metadata ---
 meta_convs = {}
 try:
-    with open(META) as f:
+    with open(meta_path) as f:
         meta_convs = json.load(f).get("conversations", {})
-except Exception: pass
+except: pass
 
-# --- 24h prompt-count bins (48 × 30 min slots) ---
-slot_ms  = 30 * 60 * 1000
-start_ms = (int(now_ms / slot_ms) - 47) * slot_ms
 bins_map = {}
 for e in entries:
     t = e.get("timestamp", 0)
-    if t >= start_ms:
-        b = int(t / slot_ms) * slot_ms
+    if t >= start_slot:
+        b = (t // slot_ms) * slot_ms
         bins_map[b] = bins_map.get(b, 0) + 1
 
-bins = [{"t": start_ms + i * slot_ms, "count": bins_map.get(start_ms + i * slot_ms, 0)} for i in range(48)]
+bins = [{"t": start_slot + i * slot_ms, "count": bins_map.get(start_slot + i * slot_ms, 0)} for i in range(48)]
 
-# --- aggregates ---
-last24       = [e for e in entries if now_ms - e.get("timestamp", 0) < 86_400_000]
-last7d       = [e for e in entries if now_ms - e.get("timestamp", 0) < 7 * 86_400_000]
-total_steps  = sum(c.get("summary", {}).get("NumSteps", 0) for c in meta_convs.values())
+last24      = [e for e in entries if e.get("timestamp", 0) >= since24]
+last7d      = [e for e in entries if e.get("timestamp", 0) >= since7d]
+total_steps = sum(c.get("summary", {}).get("NumSteps", 0) for c in meta_convs.values())
 
-def conv_updated_ms(c):
+def conv_ts(c):
     ua = c.get("summary", {}).get("UpdatedAt", "")
-    try: return datetime.fromisoformat(ua.replace("Z", "+00:00")).timestamp() * 1000
+    try:
+        from datetime import datetime, timezone
+        return datetime.fromisoformat(ua.replace("Z", "+00:00")).timestamp() * 1000
     except: return 0
 
-active_convs = [c for c in meta_convs.values() if conv_updated_ms(c) > now_ms - 86_400_000]
-
-# --- current (most recently updated) conversation ---
 current_conv = None
 if meta_convs:
-    latest = max(meta_convs.values(), key=conv_updated_ms)
+    latest = max(meta_convs.values(), key=conv_ts)
     s = latest.get("summary", {})
     current_conv = {
-        "id":        s.get("ID", ""),
         "preview":   s.get("Preview", ""),
         "steps":     s.get("NumSteps", 0),
-        "updatedAt": s.get("UpdatedAt", ""),
         "workspace": (s.get("WorkspaceURIs") or [""])[0].replace("file://", ""),
+        "updatedAt": s.get("UpdatedAt", ""),
     }
 
 last_entry = entries[-1] if entries else {}
 
-print(json.dumps({
+out = json.dumps({
     "model":        settings.get("model", "unknown"),
     "bins":         bins,
     "prompts24h":   len(last24),
     "prompts7d":    len(last7d),
     "totalPrompts": len(entries),
     "totalConvs":   len(meta_convs),
-    "activeConvs":  len(active_convs),
     "totalSteps":   total_steps,
     "lastPrompt":   last_entry.get("display", ""),
     "lastTs":       last_entry.get("timestamp", 0),
     "currentConv":  current_conv,
-}))
-PYEOF
+})
 
-cat "$CACHE_FILE"
+with open(cache_file, "w") as f:
+    f.write(out)
+print(out)
+PYEOF

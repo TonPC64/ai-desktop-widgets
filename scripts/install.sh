@@ -84,7 +84,7 @@ for file in widget-data.sh claude-status.sh claude-week.sh status.js pet-hook.sh
   rm -f "$RUNTIME/scripts/$file"
 done
 for file in "${runtime_files[@]}"; do
-  cp "$ROOT/scripts/$file" "$RUNTIME/scripts/"
+  install -m 755 "$ROOT/scripts/$file" "$RUNTIME/scripts/$file"
 done
 
 if [[ " ${selected[*]} " == *" claude "* ]]; then
