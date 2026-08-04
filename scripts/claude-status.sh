@@ -37,9 +37,18 @@ if [ -z "$NODE" ]; then
 fi
 
 now=$(date +%s)
+valid_cache() {
+  [ "$MODE" != graph ] || printf '%s' "$(cat "$CACHE")" | "$NODE" -e '
+    let input = "";
+    process.stdin.on("data", (chunk) => input += chunk).on("end", () => {
+      const value = JSON.parse(input);
+      if (!value || Array.isArray(value) || typeof value !== "object") process.exit(1);
+    });
+  ' 2>/dev/null
+}
 if [ -f "$CACHE" ]; then
   age=$(( now - $(stat -f %m "$CACHE") ))
-  if [ "$age" -lt "$TTL" ]; then
+  if [ "$age" -lt "$TTL" ] && valid_cache; then
     cat "$CACHE"
     exit 0
   fi
@@ -50,5 +59,5 @@ if [ -n "$out" ]; then
   printf '%s\n' "$out" | tee "$CACHE"
 else
   # Fall back to stale cache rather than flashing an empty button.
-  [ -f "$CACHE" ] && cat "$CACHE" || { [ "$MODE" = graph ] && echo '{}' || echo "✳ …"; }
+  [ -f "$CACHE" ] && valid_cache && cat "$CACHE" || { [ "$MODE" = graph ] && echo '{}' || echo "✳ …"; }
 fi
