@@ -1,20 +1,20 @@
 {
-  "name": "claude-status-touch-bar",
+  "name": "ai-desktop-widgets",
   "version": "1.0.0",
   "scripts": {
     "install_widgets": "bash scripts/install.sh",
     "status": "bash scripts/claude-status.sh"
   },
   "keywords": [],
-  "author": "korrio",
+  "author": "TonPC64",
   "license": "MIT",
-  "description": "Live Claude Code usage status on the MacBook Pro Touch Bar (via MTMR + ccusage)",
+  "description": "Desktop usage widgets for Claude Code, GitHub Copilot CLI, and Codex",
   "dependencies": {
     "ccusage": "^20.0.17"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/korrio/claude-status-touch-bar.git"
+    "url": "git+https://github.com/TonPC64/ai-desktop-widgets.git"
   },
-  "private": true
+  "private": false
 }
