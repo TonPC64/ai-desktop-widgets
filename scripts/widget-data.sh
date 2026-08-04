@@ -19,4 +19,5 @@ case "$pet" in
   *) pet="null" ;;
 esac
 
+[ "$graph" = '{}' ] && { printf '{"pet":%s}' "$pet"; exit 0; }
 printf '{"pet":%s,%s' "$pet" "${graph#\{}"

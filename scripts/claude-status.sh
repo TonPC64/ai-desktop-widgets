@@ -32,7 +32,7 @@ for candidate in "$(command -v node 2>/dev/null || true)" \
   fi
 done
 if [ -z "$NODE" ]; then
-  echo "✳ no node"
+  [ "$MODE" = graph ] && echo '{}' || echo "✳ no node"
   exit 0
 fi
 
@@ -50,5 +50,5 @@ if [ -n "$out" ]; then
   printf '%s\n' "$out" | tee "$CACHE"
 else
   # Fall back to stale cache rather than flashing an empty button.
-  [ -f "$CACHE" ] && cat "$CACHE" || echo "✳ …"
+  [ -f "$CACHE" ] && cat "$CACHE" || { [ "$MODE" = graph ] && echo '{}' || echo "✳ …"; }
 fi
