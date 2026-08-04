@@ -62,6 +62,11 @@ if [ -e "$HOME/Library/LaunchAgents" ] && [ ! -w "$HOME/Library/LaunchAgents" ];
 fi
 
 mkdir -p "$RUNTIME/scripts" "$WIDGET_DIR"
+for widget in claude copilot codex; do
+  if [[ " ${selected[*]} " != *" $widget "* ]]; then
+    rm -rf "$WIDGET_DIR/${widget}-status.widget"
+  fi
+done
 runtime_files=()
 for widget in "${selected[@]}"; do
   case "$widget" in
@@ -88,26 +93,11 @@ fi
 
 for widget in "${selected[@]}"; do
   source_widget="$ROOT/ubersicht/${widget}-status.widget"
-  target_widget="$WIDGET_DIR/${widget}-status.widget"
   cp -R "$source_widget" "$WIDGET_DIR/"
-  runtime_path="$RUNTIME/scripts/${widget}"
-  case "$widget" in
-    claude) runtime_path="$RUNTIME/scripts/widget-data.sh" ;;
-    copilot) runtime_path="$RUNTIME/scripts/copilot-data.sh" ;;
-    codex) runtime_path="$RUNTIME/scripts/codex-data.sh" ;;
-  esac
-  tmp="$(mktemp)"
-  sed "s|\$HOME/.local/share/claude-status-touch-bar/scripts/[^\"']*|$runtime_path|" \
-    "$target_widget/index.jsx" >"$tmp"
-  mv "$tmp" "$target_widget/index.jsx"
 done
 
 if [[ " ${selected[*]} " == *" claude "* ]]; then
   mkdir -p "$HOME/.claude"
-  tmp="$(mktemp)"
-  sed 's|claude-status-touch-bar/scripts/pet-hook.sh|ai-desktop-widgets/scripts/pet-hook.sh|g' \
-    "$RUNTIME/scripts/install-pet-hooks.js" >"$tmp"
-  mv "$tmp" "$RUNTIME/scripts/install-pet-hooks.js"
   CLAUDE_TOUCH_RUNTIME="$RUNTIME" node "$RUNTIME/scripts/install-pet-hooks.js"
 fi
 

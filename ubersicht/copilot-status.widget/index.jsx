@@ -4,14 +4,14 @@
 // scripts/copilot-data.sh (SQLite, no network calls, no external CLI).
 //
 // Sibling of claude-status.widget: same visual language (bars, palette)
-// but its own widget folder so re-installing claude-status-touch-bar
+// but its own widget folder so re-installing this project
 // (which only manages claude-status.widget) never touches this one.
 //
 // Moving, hiding, and restricting to one screen are handled natively by
 // Übersicht (right-click its menu-bar icon → this widget's ▸ submenu).
 
 export const command =
-  "$HOME/.local/share/claude-status-touch-bar/scripts/copilot-data.sh";
+  "$HOME/.local/share/ai-desktop-widgets/scripts/copilot-data.sh";
 export const refreshFrequency = 30 * 1000;
 
 // Position lives in the DOM, not in widget state: Übersicht evaluates

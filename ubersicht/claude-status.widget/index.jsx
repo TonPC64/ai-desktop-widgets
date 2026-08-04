@@ -8,7 +8,7 @@ import { PET_PALETTE, PET_BOX, PET_STATES } from "./lib/pet-frames.js";
 // widget-data.sh = graph mode (served from its 5-min cache) + the live pet
 // state, so the fast refresh below only costs a bash spawn and two cats.
 export const command =
-  "$HOME/.local/share/claude-status-touch-bar/scripts/widget-data.sh";
+  "$HOME/.local/share/ai-desktop-widgets/scripts/widget-data.sh";
 
 // Fast refresh keeps the pet reacting to Claude Code hook events within
 // ~2s; the heavy data underneath is still cached by the status layer.

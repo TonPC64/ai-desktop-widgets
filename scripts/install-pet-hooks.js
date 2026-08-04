@@ -11,10 +11,10 @@ const path = require('path');
 
 const RUNTIME =
   process.env.CLAUDE_TOUCH_RUNTIME ||
-  path.join(os.homedir(), '.local', 'share', 'claude-status-touch-bar');
+  path.join(os.homedir(), '.local', 'share', 'ai-desktop-widgets');
 const SETTINGS = path.join(os.homedir(), '.claude', 'settings.json');
 const HOOK = path.join(RUNTIME, 'scripts', 'pet-hook.sh');
-const MARK = 'claude-status-touch-bar/scripts/pet-hook.sh';
+const MARK = 'ai-desktop-widgets/scripts/pet-hook.sh';
 
 // Tool-matcher events get a matcher; lifecycle events must not.
 const EVENTS = [

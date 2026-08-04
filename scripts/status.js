@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 // Collects Claude Code status from local session data (~/.claude/projects)
-// and prints one compact line for the Touch Bar.
+// and prints one compact status line.
 //
 // Usage: node status.js block   -> "5H █████░░░ 65% $42 ⏳1h47"
 //        node status.js week    -> "7D $336 · 639M"
 //        node status.js context -> "✳ fable-5 ▓▓▓░ 147K/200K"
-//        node status.js menu    -> full SwiftBar/xbar plugin output
 //        node status.js graph   -> JSON for the Übersicht desktop widget:
 //                                  48 half-hour token bins (24h) per model,
 //                                  plus block/week summaries
@@ -15,8 +14,8 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// Resolve the .bin symlink and run it with our own node binary: MTMR and
-// SwiftBar spawn plugins with a minimal PATH where `#!/usr/bin/env node`
+// Resolve the .bin symlink and run it with our own node binary: desktop
+// launchers can use a minimal PATH where `#!/usr/bin/env node`
 // shebangs fail.
 const CCUSAGE = fs.realpathSync(
   path.join(__dirname, '..', 'node_modules', '.bin', 'ccusage')
@@ -302,7 +301,6 @@ try {
       console.log(`7D ${fmtCost(totals.totalCost)} · ${fmtTokens(totals.totalTokens)}`);
     }
   } else if (mode === 'menu') {
-    // SwiftBar/xbar plugin body: menu bar line, then dropdown after "---".
     let block = null;
     let totals = null;
     try {

@@ -3,7 +3,7 @@
 // local ~/.codex session logs via scripts/codex-data.{sh,js}.
 
 export const command =
-  "$HOME/.local/share/claude-status-touch-bar/scripts/codex-data.sh";
+  "$HOME/.local/share/ai-desktop-widgets/scripts/codex-data.sh";
 export const refreshFrequency = 30 * 1000;
 
 const POS_KEY = "codex-status-pos-v1";

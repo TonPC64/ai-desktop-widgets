@@ -1,6 +1,6 @@
 #!/bin/bash
-# Touch Bar entry point for MTMR. Prints one line and exits.
-# Caches output so the Touch Bar never blocks on a slow read.
+# Claude status collector. Prints one line and exits.
+# Caches output so a slow read does not block the widget.
 #   claude-status.sh block   (default, cached 30s)
 #   claude-status.sh week    (cached 300s)
 #   claude-status.sh menu    (cached 30s)
@@ -8,7 +8,7 @@
 set -u
 
 MODE="${1:-block}"
-# ${BASH_SOURCE[0]:-$0}: MTMR executes script *contents* via bash -c,
+# ${BASH_SOURCE[0]:-$0}: some launchers execute script contents via bash -c,
 # where BASH_SOURCE is unset and set -u would abort.
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 CACHE_DIR="${HOME}/.cache/claude-touchbar"
@@ -18,8 +18,8 @@ case "$MODE" in week|graph) TTL=300 ;; esac
 
 mkdir -p "$CACHE_DIR"
 
-# Pick a node binary: PATH first, then nvm/homebrew fallbacks (MTMR and
-# SwiftBar run scripts with their own PATHs). Each candidate is test-run:
+# Pick a node binary: PATH first, then nvm/homebrew fallbacks. Each candidate
+# is test-run:
 # a broken install (e.g. homebrew node missing its icu4c dylib) must not win.
 NODE=""
 for candidate in "$(command -v node 2>/dev/null || true)" \
