@@ -61,10 +61,30 @@ if [ -e "$HOME/Library/LaunchAgents" ] && [ ! -w "$HOME/Library/LaunchAgents" ];
   echo "warning: ~/Library/LaunchAgents is not writable; continuing without LaunchAgent changes" >&2
 fi
 
-mkdir -p "$RUNTIME" "$WIDGET_DIR"
-cp -R "$ROOT/scripts" "$RUNTIME/"
-cp "$ROOT/package.json" "$ROOT/package-lock.json" "$RUNTIME/"
-npm install --omit=dev --prefix "$RUNTIME"
+mkdir -p "$RUNTIME/scripts" "$WIDGET_DIR"
+runtime_files=()
+for widget in "${selected[@]}"; do
+  case "$widget" in
+    claude) runtime_files+=(widget-data.sh claude-status.sh status.js pet-hook.sh install-pet-hooks.js) ;;
+    copilot) runtime_files+=(copilot-data.sh) ;;
+    codex) runtime_files+=(codex-data.sh codex-data.js) ;;
+  esac
+done
+
+# Prune only files owned by this installer, so changing widget selections does
+# not leave collectors for an unselected widget behind.
+for file in widget-data.sh claude-status.sh claude-week.sh status.js pet-hook.sh \
+  install-pet-hooks.js copilot-data.sh codex-data.sh codex-data.js install.sh; do
+  rm -f "$RUNTIME/scripts/$file"
+done
+for file in "${runtime_files[@]}"; do
+  cp "$ROOT/scripts/$file" "$RUNTIME/scripts/"
+done
+
+if [[ " ${selected[*]} " == *" claude "* ]]; then
+  cp "$ROOT/package.json" "$ROOT/package-lock.json" "$RUNTIME/"
+  npm install --omit=dev --prefix "$RUNTIME"
+fi
 
 for widget in "${selected[@]}"; do
   source_widget="$ROOT/ubersicht/${widget}-status.widget"
