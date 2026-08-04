@@ -1,0 +1,258 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 71;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100000000000000000000001 /* WidgetExtension/CopilotStatusWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* WidgetExtension/CopilotStatusWidget.swift */; };
+		100000000000000000000002 /* WidgetExtension/LiquidGlassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* WidgetExtension/LiquidGlassView.swift */; };
+		100000000000000000000003 /* WidgetExtension/UsageChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* WidgetExtension/UsageChartView.swift */; };
+		100000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift */; };
+		100000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift */; };
+		100000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift */; };
+		100000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift */; };
+		100000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework */; };
+		10000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework */; };
+		10000000000000000000000B /* System/Library/Frameworks/AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* System/Library/Frameworks/AppIntents.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		200000000000000000000001 /* WidgetExtension/CopilotStatusWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/CopilotStatusWidget.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000002 /* WidgetExtension/LiquidGlassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/LiquidGlassView.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000003 /* WidgetExtension/UsageChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/UsageChartView.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/TogglePriceModeIntent.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/SnapshotStore.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/WidgetPresentation.swift; sourceTree = SOURCE_ROOT; };
+		200000000000000000000008 /* WidgetExtension/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = WidgetExtension/Info.plist; sourceTree = SOURCE_ROOT; };
+		200000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		20000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		20000000000000000000000B /* System/Library/Frameworks/AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
+		20000000000000000000000C /* AI Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "AI Widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		300000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework in Frameworks */,
+				10000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework in Frameworks */,
+				10000000000000000000000B /* System/Library/Frameworks/AppIntents.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		400000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				400000000000000000000002 /* Sources */,
+				400000000000000000000003 /* Frameworks */,
+				400000000000000000000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		400000000000000000000002 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000001 /* WidgetExtension/CopilotStatusWidget.swift */,
+				200000000000000000000002 /* WidgetExtension/LiquidGlassView.swift */,
+				200000000000000000000003 /* WidgetExtension/UsageChartView.swift */,
+				200000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift */,
+				200000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift */,
+				200000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift */,
+				200000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift */,
+				200000000000000000000008 /* WidgetExtension/Info.plist */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		400000000000000000000003 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework */,
+				20000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework */,
+				20000000000000000000000B /* System/Library/Frameworks/AppIntents.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		400000000000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				20000000000000000000000C /* AI Widgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		500000000000000000000001 /* AIWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 600000000000000000000002 /* Build configuration list for PBXNativeTarget "AIWidgetsExtension" */;
+			buildPhases = (
+				700000000000000000000001 /* Sources */,
+				300000000000000000000001 /* Frameworks */,
+				700000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIWidgetsExtension;
+			productName = "AI Widgets";
+			productReference = 20000000000000000000000C /* AI Widgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		800000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					500000000000000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = 600000000000000000000001 /* Build configuration list for PBXProject "AIWidgetsExtension" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 400000000000000000000001;
+			productRefGroup = 400000000000000000000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				500000000000000000000001 /* AIWidgetsExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		700000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		700000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100000000000000000000001 /* WidgetExtension/CopilotStatusWidget.swift in Sources */,
+				100000000000000000000002 /* WidgetExtension/LiquidGlassView.swift in Sources */,
+				100000000000000000000003 /* WidgetExtension/UsageChartView.swift in Sources */,
+				100000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift in Sources */,
+				100000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift in Sources */,
+				100000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift in Sources */,
+				100000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		900000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		900000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		900000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ai-desktop-widgets.ai-widgets.widget";
+				PRODUCT_MODULE_NAME = CopilotStatusWidget;
+				PRODUCT_NAME = "AI Widgets";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG WIDGET_EXTENSION";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		900000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ai-desktop-widgets.ai-widgets.widget";
+				PRODUCT_MODULE_NAME = CopilotStatusWidget;
+				PRODUCT_NAME = "AI Widgets";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = WIDGET_EXTENSION;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		600000000000000000000001 /* Build configuration list for PBXProject "AIWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				900000000000000000000001 /* Debug */,
+				900000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		600000000000000000000002 /* Build configuration list for PBXNativeTarget "AIWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				900000000000000000000003 /* Debug */,
+				900000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 800000000000000000000001 /* Project object */;
+}
