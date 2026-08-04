@@ -120,10 +120,10 @@ const OTHER_HUE = "#898781";
 const MODEL_ORDER = ["fable", "opus", "sonnet", "haiku"];
 
 const INK = "#ffffff";
-const INK_SECONDARY = "#c3c2b7";
-const INK_MUTED = "#898781";
-const HAIRLINE = "rgba(255,255,255,0.10)";
-const TRACK = "#383835";
+const INK_SECONDARY = "rgba(255,255,255,0.75)";
+const INK_MUTED = "rgba(255,255,255,0.45)";
+const HAIRLINE = "rgba(255,255,255,0.18)";
+const TRACK = "rgba(255,255,255,0.10)";
 
 // Übersicht already only renders its widget layer on the main display (its
 // docs describe widget positioning as relative to "the screen", singular),
@@ -134,11 +134,22 @@ export const className = `
   width: 340px;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: ${INK};
-  background: rgba(26, 26, 25, 0.85);
-  border: 1px solid ${HAIRLINE};
-  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.04) 60%, rgba(120,180,255,0.06) 100%),
+    rgba(18, 18, 24, 0.55);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-bottom-color: rgba(255,255,255,0.10);
+  border-right-color: rgba(255,255,255,0.10);
+  border-radius: 20px;
   padding: 16px 18px;
-  -webkit-backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.08);
+  backdrop-filter: blur(48px) saturate(180%) brightness(1.08);
+  box-shadow:
+    0 0 0 0.5px rgba(255,255,255,0.12) inset,
+    0 1.5px 0 0 rgba(255,255,255,0.18) inset,
+    0 8px 32px rgba(0,0,0,0.40),
+    0 2px 8px rgba(0,0,0,0.25),
+    0 0 60px rgba(100,160,255,0.06);
   z-index: 1;
 `;
 

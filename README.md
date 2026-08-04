@@ -78,6 +78,12 @@ bash scripts/uninstall.sh
 
 It removes only this project's widget directories, runtime files, and LaunchAgent. Shared Claude hooks in `~/.claude/settings.json` and unrelated Übersicht widgets are intentionally preserved.
 
+## Inspiration
+
+This project is inspired by [korrio/claude-status-touch-bar](https://github.com/korrio/claude-status-touch-bar) — a Touch Bar + SwiftBar + Übersicht widget that shows live Claude Code usage on MacBook Pro Touch Bars. The widget layout (5H / 7D quota bars, 24-hour activity chart, tamaclaude desk pet, and per-model color coding) originates from that project.
+
+> **After cloning this repo**, run the installer as noted in the [Install](#install) section. No Xcode build or Touch Bar hardware is needed — this fork targets the Übersicht desktop widget only.
+
 ## Credits and license
 
-Built with [Übersicht](https://tracesof.net/uebersicht/), [ccusage](https://github.com/ryoppippi/ccusage), Claude Code, GitHub Copilot CLI, and Codex CLI. Released under the [MIT License](LICENSE).
+Built with [Übersicht](https://tracesof.net/uebersicht/), [ccusage](https://github.com/ryoppippi/ccusage), Claude Code, GitHub Copilot CLI, and Codex CLI. Inspired by [korrio/claude-status-touch-bar](https://github.com/korrio/claude-status-touch-bar) (MIT, © korrio). Released under the [MIT License](LICENSE).
