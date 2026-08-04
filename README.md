@@ -79,7 +79,7 @@ Run the uninstaller from the repository root:
 bash scripts/uninstall.sh
 ```
 
-It removes only this project's widget directories, runtime files, and LaunchAgent. Shared Claude hooks in `~/.claude/settings.json` and unrelated Übersicht widgets are intentionally preserved.
+It removes this project's widget directories, runtime files, LaunchAgent, and Claude hooks. Unrelated Claude hooks in `~/.claude/settings.json` and unrelated Übersicht widgets are preserved.
 
 ## Inspiration
 

@@ -15,6 +15,7 @@ const RUNTIME =
 const SETTINGS = path.join(os.homedir(), '.claude', 'settings.json');
 const HOOK = path.join(RUNTIME, 'scripts', 'pet-hook.sh');
 const MARK = 'ai-desktop-widgets/scripts/pet-hook.sh';
+const uninstall = process.argv[2] === '--uninstall';
 
 // Tool-matcher events get a matcher; lifecycle events must not.
 const EVENTS = [
@@ -29,8 +30,22 @@ const EVENTS = [
 let settings = {};
 try {
   settings = JSON.parse(fs.readFileSync(SETTINGS, 'utf8'));
-  fs.copyFileSync(SETTINGS, SETTINGS + '.bak-pet-hooks');
-} catch {}
+  if (!uninstall) fs.copyFileSync(SETTINGS, SETTINGS + '.bak-pet-hooks');
+} catch {
+  if (uninstall) process.exit(0);
+}
+
+if (uninstall) {
+  for (const event of Object.keys(settings.hooks || {})) {
+    const hooks = settings.hooks[event];
+    if (!Array.isArray(hooks)) continue;
+    settings.hooks[event] = hooks.filter((entry) => !JSON.stringify(entry).includes(MARK));
+    if (!settings.hooks[event].length) delete settings.hooks[event];
+  }
+  fs.writeFileSync(SETTINGS, JSON.stringify(settings, null, 2) + '\n');
+  console.log('pet hooks removed from ' + SETTINGS);
+  process.exit(0);
+}
 
 settings.hooks = settings.hooks || {};
 for (const [event, withMatcher] of EVENTS) {
