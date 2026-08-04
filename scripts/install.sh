@@ -8,13 +8,13 @@ WIDGETS="all"
 
 usage() {
   cat <<'EOF'
-Usage: scripts/install.sh [--only widget] [--widgets claude,copilot,codex]
+Usage: scripts/install.sh [--only widget] [--widgets claude,copilot,codex,agy]
 
 Install Übersicht desktop widgets.
 
 Options:
   --only widget                 Install the widget component (the only component).
-  --widgets NAME[,NAME...]      Choose claude, copilot, codex, all, or both.
+  --widgets NAME[,NAME...]      Choose claude, copilot, codex, agy, all, or both.
   -h, --help                    Show this help.
 EOF
 }
@@ -44,13 +44,13 @@ while [ "$#" -gt 0 ]; do
 done
 
 case "$WIDGETS" in
-  all) selected=(claude copilot codex) ;;
+  all) selected=(claude copilot codex agy) ;;
   both) selected=(claude copilot) ;;
   *)
     IFS=, read -r -a selected <<<"$WIDGETS"
     [ "${#selected[@]}" -gt 0 ] || { echo "no widgets selected" >&2; exit 2; }
     for widget in "${selected[@]}"; do
-      case "$widget" in claude|copilot|codex) ;; *) echo "unknown widget: $widget" >&2; exit 2 ;; esac
+      case "$widget" in claude|copilot|codex|agy) ;; *) echo "unknown widget: $widget" >&2; exit 2 ;; esac
     done
     ;;
 esac
@@ -62,7 +62,7 @@ if [ -e "$HOME/Library/LaunchAgents" ] && [ ! -w "$HOME/Library/LaunchAgents" ];
 fi
 
 mkdir -p "$RUNTIME/scripts" "$WIDGET_DIR"
-for widget in claude copilot codex; do
+for widget in claude copilot codex agy; do
   if [[ " ${selected[*]} " != *" $widget "* ]]; then
     rm -rf "$WIDGET_DIR/${widget}-status.widget"
   fi
@@ -73,13 +73,14 @@ for widget in "${selected[@]}"; do
     claude) runtime_files+=(widget-data.sh claude-status.sh status.js pet-hook.sh install-pet-hooks.js) ;;
     copilot) runtime_files+=(copilot-data.sh) ;;
     codex) runtime_files+=(codex-data.sh codex-data.js) ;;
+    agy) runtime_files+=(agy-data.sh) ;;
   esac
 done
 
 # Prune only files owned by this installer, so changing widget selections does
 # not leave collectors for an unselected widget behind.
 for file in widget-data.sh claude-status.sh claude-week.sh status.js pet-hook.sh \
-  install-pet-hooks.js copilot-data.sh codex-data.sh codex-data.js install.sh; do
+  install-pet-hooks.js copilot-data.sh codex-data.sh codex-data.js agy-data.sh install.sh; do
   rm -f "$RUNTIME/scripts/$file"
 done
 for file in "${runtime_files[@]}"; do

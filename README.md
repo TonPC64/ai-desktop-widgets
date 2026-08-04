@@ -9,6 +9,7 @@ Usage widgets for [Übersicht](https://tracesof.net/uebersicht/) on macOS. Keep 
 - **Claude Code** — 24-hour activity, active block, plan quota, context use, and an optional status pet.
 - **GitHub Copilot CLI** — today and month activity, AI units, and a monthly budget indicator.
 - **Codex** — token activity, current context, subscription quota windows, and an API-rate-equivalent token estimate.
+- **Antigravity CLI** — 24h prompt activity bars, model in use, session stats, and last prompt preview.
 
 ## Requirements
 
@@ -18,6 +19,7 @@ Usage widgets for [Übersicht](https://tracesof.net/uebersicht/) on macOS. Keep 
   - Claude Code, signed in, for `claude`.
   - GitHub Copilot CLI, with `~/.copilot/session-store.db`, for `copilot`. macOS `sqlite3` is used to read it.
   - Codex CLI, signed in, for `codex`. A Codex version with `app-server` support provides the live quota windows; session logs remain the fallback.
+  - Antigravity CLI (`agy`), signed in, for `agy`. Reads `~/.gemini/antigravity-cli` local data only.
 
 ## Install
 
@@ -39,10 +41,11 @@ Install one widget, a comma-separated selection, or everything:
 bash scripts/install.sh --widgets claude
 bash scripts/install.sh --widgets copilot
 bash scripts/install.sh --widgets codex
+bash scripts/install.sh --widgets agy
 bash scripts/install.sh --widgets all
 ```
 
-Run the same command again to change the selection. `--widgets claude,copilot` is also supported.
+Run the same command again to change the selection. `--widgets claude,copilot,agy` is also supported.
 
 ## Data and privacy
 
