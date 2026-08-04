@@ -68,16 +68,13 @@ Its dollar figure is an API-rate-equivalent estimate calculated from logged toke
 
 ## Uninstall
 
-Remove the installed widget directories and runtime files:
+Run the uninstaller from the repository root:
 
 ```sh
-rm -rf "$HOME/Library/Application Support/Übersicht/widgets/claude-status.widget"
-rm -rf "$HOME/Library/Application Support/Übersicht/widgets/copilot-status.widget"
-rm -rf "$HOME/Library/Application Support/Übersicht/widgets/codex-status.widget"
-rm -rf "$HOME/.local/share/ai-desktop-widgets"
+bash scripts/uninstall.sh
 ```
 
-If you installed the Claude widget, remove its entries from `~/.claude/settings.json` (the installer creates `~/.claude/settings.json.bak-pet-hooks` first) and optionally remove the related cache files under `~/.cache`.
+It removes only this project's widget directories, runtime files, and LaunchAgent. Shared Claude hooks in `~/.claude/settings.json` and unrelated Übersicht widgets are intentionally preserved.
 
 ## Credits and license
 
