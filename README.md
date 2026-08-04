@@ -2,6 +2,8 @@
 
 Usage widgets for [Übersicht](https://tracesof.net/uebersicht/) on macOS. Keep an eye on Claude Code, GitHub Copilot CLI, and Codex without leaving your desktop.
 
+<img width="1285" height="391" alt="widgets" src="https://github.com/user-attachments/assets/b8e3d15b-4537-406a-9a70-940c1bf057b7" />
+
 ## Included widgets
 
 - **Claude Code** — 24-hour activity, active block, plan quota, context use, and an optional status pet.
