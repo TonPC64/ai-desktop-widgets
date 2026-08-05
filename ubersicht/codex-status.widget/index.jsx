@@ -109,29 +109,6 @@ const resetLabel = (value) => {
   const sameDay = d.toDateString() === now.toDateString();
   return "resets " + (sameDay ? hhmm(value) : d.toLocaleDateString(undefined, { weekday: "short" }) + " " + hhmm(value));
 };
-const quotaColor = (remaining) => remaining <= 10 ? "#e66767" : remaining <= 30 ? "#c98500" : "#30b77a";
-
-const Quota = ({ item, label }) => {
-  if (!item) return (
-    <div style={{ flex: 1 }}>
-      <div style={{ fontSize: 11, fontWeight: 600 }}>{label}</div>
-      <div style={{ marginTop: 5, color: MUTED, fontSize: 11 }}>N/A</div>
-    </div>
-  );
-  const color = quotaColor(item.remainingPercent);
-  return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 600 }}>
-        <span>{item.label}</span><span>{item.remainingPercent}% left</span>
-      </div>
-      <div style={{ height: 4, borderRadius: 2, background: TRACK, marginTop: 6, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${item.remainingPercent}%`, background: color, borderRadius: 2 }} />
-      </div>
-      <div style={{ fontSize: 10, color: MUTED, marginTop: 4 }}>{resetLabel(item.resetsAt)}</div>
-    </div>
-  );
-};
-
 export const render = ({ output }) => {
   let d = null;
   try { d = JSON.parse(output); } catch (e) {}
@@ -153,9 +130,6 @@ export const render = ({ output }) => {
   const maxTotal = Math.max(1, ...bins.map((b) => b.total));
   const models = ["sol", "terra", "luna", "other"].filter((m) => rows.some((r) => r.model === m));
   const current = d.current || {};
-  const quota = d.quota || [];
-  const primaryQuota = quota.find((q) => q.label === "5H") || quota.find((q) => q.label !== "7D") || null;
-  const secondaryQuota = quota.find((q) => q.label === "7D") || quota.find((q) => q !== primaryQuota) || null;
   const contextPct = current.contextWindow > 0 ? Math.min(100, current.tokens / current.contextWindow * 100) : 0;
   const monthLabel = new Date().toLocaleString(undefined, { month: "long" });
   const BAR_H = 58;
@@ -167,22 +141,13 @@ export const render = ({ output }) => {
         <div style={{ fontSize: 11, color: MUTED }}>last 24h</div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 6 }}>
-        <div style={{ fontSize: 24, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {current.model || "No session"}
+      <div style={{ marginTop: 12 }}>
+        <div style={{ fontSize: 10, color: MUTED, letterSpacing: "0.08em" }}>{monthLabel.toUpperCase()} USAGE</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 3 }}>
+          <div style={{ fontSize: 26, fontWeight: 600 }}>{fmtMoney(d.monthCost)}</div>
+          <div style={{ fontSize: 12, color: SECONDARY }}>{fmtTok(d.monthTokens)} tokens</div>
         </div>
-        {current.effort && <div style={{ fontSize: 11, color: SECONDARY }}>{current.effort}</div>}
       </div>
-      {current.contextWindow > 0 && (
-        <div style={{ marginTop: 6 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: SECONDARY }}>
-            <span>current context</span><span>{fmtTok(current.tokens)} / {fmtTok(current.contextWindow)}</span>
-          </div>
-          <div style={{ height: 3, borderRadius: 2, background: TRACK, marginTop: 4 }}>
-            <div style={{ height: "100%", width: `${contextPct}%`, background: "#a86bff", borderRadius: 2 }} />
-          </div>
-        </div>
-      )}
 
       <div style={{ position: "relative", marginTop: 14 }}>
         <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: BAR_H, borderBottom: `1px solid ${HAIRLINE}` }}>
@@ -216,12 +181,18 @@ export const render = ({ output }) => {
         {!models.length && <div style={{ fontSize: 10, color: MUTED }}>no activity in the last 24h</div>}
       </div>
 
-      <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 11, borderTop: `1px solid ${HAIRLINE}` }}>
-        <Quota item={primaryQuota} label="5H" /><Quota item={secondaryQuota} label="7D" />
-      </div>
-      <div style={{ marginTop: 9, fontSize: 10, color: MUTED, lineHeight: 1.45 }}>
+      <div style={{ marginTop: 12, paddingTop: 11, borderTop: `1px solid ${HAIRLINE}`, fontSize: 10, color: MUTED, lineHeight: 1.45 }}>
+        {current.contextWindow > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", color: SECONDARY }}>
+              <span>current context</span><span>{fmtTok(current.tokens)} / {fmtTok(current.contextWindow)}</span>
+            </div>
+            <div style={{ height: 3, borderRadius: 2, background: TRACK, marginTop: 4 }}>
+              <div style={{ height: "100%", width: `${contextPct}%`, background: "#a86bff", borderRadius: 2 }} />
+            </div>
+          </div>
+        )}
         <div>Today {fmtTok(d.todayTokens)} · est. {fmtMoney(d.todayCost)}</div>
-        <div>{monthLabel} {fmtTok(d.monthTokens)} · est. {fmtMoney(d.monthCost)}</div>
         <div style={{ color: "rgba(255,255,255,0.38)" }}>
           API-rate estimate{d.monthUnpricedTokens ? ` · ${fmtTok(d.monthUnpricedTokens)} unpriced` : ""}
           {d.error ? ` · ${d.error}` : ""}
