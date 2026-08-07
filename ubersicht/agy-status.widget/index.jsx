@@ -1,6 +1,6 @@
 // Antigravity CLI usage — Übersicht desktop widget.
-// Shows 24h prompt activity bars, active conversation, model, and session stats.
-// Data comes from ~/.gemini/antigravity-cli local files — no network calls.
+// Shows 24h prompt activity bars, per-group quota % with progress bar, and session stats.
+// Data comes from ~/.gemini/antigravity-cli local files + agy /quota (5-min cache).
 
 export const command =
   "$HOME/.local/share/ai-desktop-widgets/scripts/agy-data.sh";
@@ -12,18 +12,12 @@ const BASE_LEFT = 24;
 const BASE_TOP  = 420;
 const GRID      = 12;
 
-// ── colours ──────────────────────────────────────────────────────────────────
-const INK       = "#ffffff";
-const SECONDARY = "rgba(255,255,255,0.75)";
-const MUTED     = "rgba(255,255,255,0.45)";
-const HAIRLINE  = "rgba(255,255,255,0.18)";
-const TRACK     = "rgba(255,255,255,0.10)";
+const INK      = "#ffffff";
+const MUTED    = "rgba(255,255,255,0.45)";
+const HAIRLINE = "rgba(255,255,255,0.18)";
+const AGY_BAR  = "linear-gradient(180deg, #4f9eff 0%, #a78bfa 60%, #34d399 100%)";
+const AGY_GLOW = "rgba(99,102,241,0.08)";
 
-// Antigravity brand gradient: Google-blue → violet → teal
-const AGY_BAR   = "linear-gradient(180deg, #4f9eff 0%, #a78bfa 60%, #34d399 100%)";
-const AGY_GLOW  = "rgba(99,102,241,0.08)";
-
-// ── liquid glass card ─────────────────────────────────────────────────────────
 export const className = `
   top: ${BASE_TOP}px;
   left: ${BASE_LEFT}px;
@@ -49,7 +43,6 @@ export const className = `
   z-index: 1;
 `;
 
-// ── position helpers ──────────────────────────────────────────────────────────
 const loadPos = () => {
   try {
     const p = JSON.parse(localStorage.getItem(POS_KEY));
@@ -96,44 +89,40 @@ const startDrag = (e) => {
   window.addEventListener("mouseup",   onUp);
 };
 
-// ── state ─────────────────────────────────────────────────────────────────────
 export const initialState = { output: "" };
 export const updateState = (event, prev) =>
   event.type === "UB/COMMAND_RAN"
     ? Object.assign({}, prev, { output: event.output })
     : prev;
 
-// ── helpers ───────────────────────────────────────────────────────────────────
 const hhmm = (ts) => {
   const d = new Date(ts);
   return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 };
-
 const timeAgo = (ts) => {
   const diff = Date.now() - ts;
-  if (diff < 60000)  return "just now";
-  if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
+  if (diff < 60000)    return "just now";
+  if (diff < 3600000)  return Math.floor(diff / 60000) + "m ago";
   if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
   return Math.floor(diff / 86400000) + "d ago";
 };
-
-const shortWorkspace = (ws) => {
-  if (!ws) return "";
-  const parts = ws.replace(/^\/Users\/[^/]+/, "~").split("/");
-  return parts.slice(-2).join("/");
+const timeUntil = (ts) => {
+  const diff = ts - Date.now();
+  if (diff <= 0)       return "now";
+  if (diff < 3600000)  return Math.ceil(diff / 60000) + "m";
+  if (diff < 86400000) return Math.ceil(diff / 3600000) + "h";
+  const d = Math.floor(diff / 86400000);
+  const h = Math.ceil((diff % 86400000) / 3600000);
+  return h > 0 ? `${d}d ${h}h` : `${d}d`;
 };
-
-// Truncate model name to fit the card
 const shortModel = (m) => {
   if (!m) return "unknown";
-  // "Claude Sonnet 4.6 (Thinking)" → "Sonnet 4.6 ✦"
   return m
     .replace(/^Claude\s+/i, "")
     .replace(/\s*\(Thinking\)/i, " ✦")
     .replace(/\s*\(Preview\)/i, " ⌁");
 };
 
-// ── AGY logo (stylised "A" → ▲ with gradient shimmer) ────────────────────────
 const AgyrLogo = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" aria-label="Antigravity">
     <defs>
@@ -148,7 +137,53 @@ const AgyrLogo = () => (
   </svg>
 );
 
-// ── render ────────────────────────────────────────────────────────────────────
+// pct: number 0-100 or null (unknown)
+const QuotaRow = ({ label, pct, resetTs }) => {
+  const known    = pct !== null && pct !== undefined;
+  const ok       = !known || pct > 0;
+  const barColor = pct >= 50 ? "#34d399" : pct >= 20 ? "#fbbf24" : "#f87171";
+  const textColor = ok ? (pct >= 50 ? "#6ee7b7" : pct >= 20 ? "#fde68a" : "#fca5a5") : "#fca5a5";
+
+  return (
+    <div style={{
+      padding: "5px 8px",
+      borderRadius: 7,
+      background: ok ? "rgba(255,255,255,0.05)" : "rgba(239,68,68,0.12)",
+      border: `1px solid ${ok ? HAIRLINE : "rgba(239,68,68,0.30)"}`,
+    }}>
+      {/* label row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+        <div style={{ fontSize: 10, color: textColor, fontWeight: 600 }}>
+          {!ok && "⚠ "}{label}
+        </div>
+        <div style={{ fontSize: 10, color: textColor, fontWeight: 700 }}>
+          {known ? `${pct}%` : "—"}
+          {!ok && resetTs > 0 && (
+            <span style={{ fontWeight: 400, fontSize: 9, marginLeft: 5 }}>
+              resets {timeUntil(resetTs)} · {hhmm(resetTs)}
+            </span>
+          )}
+        </div>
+      </div>
+      {/* progress bar */}
+      <div style={{
+        height: 4,
+        borderRadius: 2,
+        background: "rgba(255,255,255,0.10)",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          height: "100%",
+          width: `${known ? pct : 0}%`,
+          background: known ? barColor : "transparent",
+          borderRadius: 2,
+          transition: "width 0.4s ease",
+        }} />
+      </div>
+    </div>
+  );
+};
+
 export const render = ({ output }) => {
   let d = null;
   try { d = JSON.parse(output); } catch {}
@@ -158,9 +193,9 @@ export const render = ({ output }) => {
     </div>
   );
 
-  const bins    = d.bins || [];
+  const bins     = d.bins || [];
   const maxCount = Math.max(1, ...bins.map(b => b.count));
-  const BAR_H   = 48;
+  const BAR_H    = 48;
 
   return (
     <div ref={restorePos}>
@@ -179,11 +214,15 @@ export const render = ({ output }) => {
         </div>
       </div>
 
-      {/* ── hero: model + prompts ── */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
-        <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>
-          {shortModel(d.model)}
-        </div>
+      {/* ── hero: model ── */}
+      <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", marginTop: 8 }}>
+        {shortModel(d.model)}
+      </div>
+
+      {/* ── per-group quota rows ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
+        <QuotaRow label="Gemini"        pct={d.geminiPct}    resetTs={d.geminiResetTs}    />
+        <QuotaRow label="Claude & GPT"  pct={d.claudeGptPct} resetTs={d.claudeGptResetTs} />
       </div>
 
       {/* ── stat pills row ── */}
@@ -239,8 +278,6 @@ export const render = ({ output }) => {
             );
           })}
         </div>
-
-        {/* time markers */}
         <div style={{ position: "relative", height: 13 }}>
           {bins.map((b, i) => {
             const dt = new Date(b.t);
@@ -260,58 +297,17 @@ export const render = ({ output }) => {
         </div>
       </div>
 
-      {/* ── current session ── */}
-      {d.currentConv && (
-        <div style={{
-          marginTop: 12,
-          padding: "9px 11px",
-          background: "rgba(255,255,255,0.055)",
-          border: `1px solid ${HAIRLINE}`,
-          borderRadius: 12,
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <div style={{ fontSize: 10, letterSpacing: "0.07em", color: MUTED }}>LAST SESSION</div>
-            <div style={{ fontSize: 9, color: MUTED }}>{d.currentConv.steps} steps</div>
-          </div>
-          <div style={{
-            fontSize: 12,
-            fontWeight: 500,
-            marginTop: 4,
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-          }}>
-            {d.currentConv.preview || "—"}
-          </div>
-          <div style={{ fontSize: 9, color: MUTED, marginTop: 3 }}>
-            {shortWorkspace(d.currentConv.workspace)}
-          </div>
-        </div>
-      )}
-
-      {/* ── last prompt + footer ── */}
+      {/* ── footer: last activity ── */}
       <div style={{
-        marginTop: 10,
-        paddingTop: 9,
+        marginTop: 8,
+        paddingTop: 8,
         borderTop: `1px solid ${HAIRLINE}`,
+        display: "flex",
+        justifyContent: "flex-end",
+        fontSize: 9,
+        color: MUTED,
       }}>
-        {d.lastPrompt && (
-          <div style={{
-            fontSize: 10,
-            color: SECONDARY,
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-            fontStyle: "italic",
-            marginBottom: 4,
-          }}>
-            "{d.lastPrompt}"
-          </div>
-        )}
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: MUTED }}>
-          <span>{d.totalPrompts} total prompts</span>
-          <span>{d.lastTs ? timeAgo(d.lastTs) : ""}</span>
-        </div>
+        <span>{d.lastTs ? timeAgo(d.lastTs) : "no activity"}</span>
       </div>
 
     </div>
