@@ -6,6 +6,18 @@ RUNTIME="$HOME/.local/share/ai-desktop-widgets"
 WIDGET_DIR="$HOME/Library/Application Support/Übersicht/widgets"
 WIDGETS="all"
 
+ensure_ubersicht() {
+  [ -d "/Applications/Übersicht.app" ] && return
+  if command -v brew >/dev/null 2>&1; then
+    echo "Übersicht not found; installing via Homebrew..."
+    brew install --cask ubersicht
+  else
+    echo "Übersicht is not installed and Homebrew is unavailable." >&2
+    echo "Install it from https://tracesof.net/uebersicht/ then re-run." >&2
+    exit 1
+  fi
+}
+
 usage() {
   cat <<'EOF'
 Usage: scripts/install.sh [--only widget] [--widgets claude,copilot,codex,agy]
@@ -55,6 +67,7 @@ case "$WIDGETS" in
     ;;
 esac
 
+ensure_ubersicht
 mkdir -p "$RUNTIME/scripts" "$WIDGET_DIR"
 runtime_files=()
 for widget in "${selected[@]}"; do
