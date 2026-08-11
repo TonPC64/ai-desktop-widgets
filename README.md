@@ -6,6 +6,8 @@ Desktop widgets for monitoring AI CLI usage on macOS. Includes two flavors:
 - **Native WidgetKit app** (macOS 15+) — a standard macOS widget for Claude, Copilot, and Codex that lives in Notification Center or on the desktop, with no Dock icon or menu bar.
 
 <img width="1285" height="391" alt="widgets" src="https://github.com/user-attachments/assets/b8e3d15b-4537-406a-9a70-940c1bf057b7" />
+<img width="1134" height="216" alt="Screenshot 2569-08-11 at 14 28 04" src="https://github.com/user-attachments/assets/a6b465e1-1e02-4c4c-b9f4-6035c1f87a3f" />
+
 
 ## Included widgets
 
