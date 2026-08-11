@@ -39,7 +39,7 @@ final class ProviderSnapshotTests: XCTestCase {
 
         XCTAssertEqual(snapshot.provider, .claude)
         XCTAssertEqual(snapshot.heroText, "$1.16")
-        XCTAssertEqual(snapshot.detailText, "3.4M tokens · Today usage")
+        XCTAssertEqual(snapshot.detailText, "3.4M tokens · Last 24h usage")
         XCTAssertEqual(snapshot.buckets.first?.model, "sonnet")
         XCTAssertEqual(snapshot.quotas.map(\.label), ["7D"])
         XCTAssertEqual(snapshot.metrics.first?.value, "40%")
@@ -56,7 +56,7 @@ final class ProviderSnapshotTests: XCTestCase {
 
         XCTAssertEqual(snapshot.quotas, [])
         XCTAssertEqual(snapshot.claudeWindow(for: .today)?.heroText, "$1.16")
-        XCTAssertEqual(snapshot.claudeWindow(for: .today)?.detailText, "3.4M tokens · Today usage")
+        XCTAssertEqual(snapshot.claudeWindow(for: .today)?.detailText, "3.4M tokens · Last 24h usage")
         XCTAssertEqual(snapshot.claudeWindow(for: .sevenDay)?.heroText, "$126")
         let month = snapshot.claudePresentation(for: .month)
         XCTAssertEqual(month.heroText, "$248.50")
@@ -76,7 +76,7 @@ final class ProviderSnapshotTests: XCTestCase {
         XCTAssertEqual(snapshot.claudeWindow(for: .today)?.heroText, "$1.16")
         XCTAssertEqual(snapshot.claudeWindow(for: .sevenDay)?.heroText, "40%")
         XCTAssertEqual(snapshot.claudeWindow(for: .month)?.heroText, "$248.50")
-        XCTAssertEqual(snapshot.claudeWindow(for: .today)?.detailText, "3.4M tokens · Today usage")
+        XCTAssertEqual(snapshot.claudeWindow(for: .today)?.detailText, "3.4M tokens · Last 24h usage")
     }
 
     func testClaudePartialQuotaUsesCostAndOmitsMissingQuotaRows() throws {
@@ -103,7 +103,7 @@ final class ProviderSnapshotTests: XCTestCase {
 
         let today = try XCTUnwrap(snapshot.claudeWindow(for: .today))
         XCTAssertEqual(today.heroText, "--")
-        XCTAssertEqual(today.detailText, "3.4M tokens · Today usage")
+        XCTAssertEqual(today.detailText, "3.4M tokens · Last 24h usage")
         let sevenDay = try XCTUnwrap(snapshot.claudeWindow(for: .sevenDay))
         XCTAssertEqual(sevenDay.heroText, "--")
         XCTAssertEqual(sevenDay.detailText, "Tokens unavailable · 7D usage")
@@ -112,13 +112,14 @@ final class ProviderSnapshotTests: XCTestCase {
     func testClaudeWithoutQuotaOrTodayWindowShowsNoQuotaPercentage() throws {
         let snapshot = try ProviderPayload.decode(
             provider: .claude,
-            data: Data(#"{"bins":[],"quota":null}"#.utf8),
+            data: Data(#"{"bins":[],"quota":null,"month":{"tokens":1000000}}"#.utf8),
             observedAt: date
         )
 
         XCTAssertEqual(snapshot.heroText, "--")
+        XCTAssertEqual(snapshot.detailText, "1.0M tokens · Last 24h usage")
         XCTAssertEqual(snapshot.quotas, [])
-        XCTAssertEqual(snapshot.metrics, [])
+        XCTAssertEqual(snapshot.metrics, [.init(label: "Month", value: "1.0M tokens")])
     }
 
     func testClaudeUsagePeriodsCycleAndMigrateFiveHour() {
@@ -131,7 +132,8 @@ final class ProviderSnapshotTests: XCTestCase {
     }
 
     func testClaudeUsagePeriodHeaderLabelsMatchSelectedPeriod() {
-        XCTAssertEqual(ClaudeUsagePeriod.today.headerLabel, "today")
+        XCTAssertEqual(ClaudeUsagePeriod.today.headerLabel, "last 24h")
+        XCTAssertEqual(ClaudeUsagePeriod.today.usageLabel, "Last 24h")
         XCTAssertEqual(ClaudeUsagePeriod.sevenDay.headerLabel, "last 7d")
         XCTAssertEqual(ClaudeUsagePeriod.month.headerLabel, "this month")
     }

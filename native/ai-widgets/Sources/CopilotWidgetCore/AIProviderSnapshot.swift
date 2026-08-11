@@ -67,7 +67,7 @@ public enum ClaudeUsagePeriod: String, Codable, CaseIterable, Sendable {
 
     public var headerLabel: String {
         switch self {
-        case .today: "today"
+        case .today: "last 24h"
         case .sevenDay: "last 7d"
         case .month: "this month"
         }
@@ -75,7 +75,7 @@ public enum ClaudeUsagePeriod: String, Codable, CaseIterable, Sendable {
 
     var usageLabel: String {
         switch self {
-        case .today: "Today"
+        case .today: "Last 24h"
         case .sevenDay: "7D"
         case .month: "Month"
         }
@@ -130,6 +130,7 @@ public struct AIProviderSnapshot: Codable, Equatable, Sendable {
     public let metrics: [ProviderMetric]
     public let quotas: [ProviderQuota]
     public let claudeWindows: [ClaudeUsageWindow]?
+    public let codexWindows: [ClaudeUsageWindow]?
 
     public init(
         provider: AIProvider,
@@ -145,7 +146,8 @@ public struct AIProviderSnapshot: Codable, Equatable, Sendable {
         priceModeSupported: Bool,
         metrics: [ProviderMetric] = [],
         quotas: [ProviderQuota] = [],
-        claudeWindows: [ClaudeUsageWindow]? = nil
+        claudeWindows: [ClaudeUsageWindow]? = nil,
+        codexWindows: [ClaudeUsageWindow]? = nil
     ) {
         self.provider = provider
         self.observedAt = observedAt
@@ -161,10 +163,18 @@ public struct AIProviderSnapshot: Codable, Equatable, Sendable {
         self.metrics = metrics
         self.quotas = quotas
         self.claudeWindows = claudeWindows
+        self.codexWindows = codexWindows
     }
 
     public func claudeWindow(for period: ClaudeUsagePeriod) -> ClaudeUsageWindow? {
         claudeWindows?.first { $0.period == period }
+    }
+
+    public func codexPresentation(for period: ClaudeUsagePeriod) -> ClaudeUsagePresentation {
+        guard let window = codexWindows?.first(where: { $0.period == period }) else {
+            return .init(headerLabel: period.headerLabel, heroText: "--", detailText: "No \(period.usageLabel) usage data", buckets: [], models: [], chartStart: nil, chartInterval: nil, chartSlotCount: nil)
+        }
+        return .init(headerLabel: period.headerLabel, heroText: window.heroText, detailText: window.detailText, buckets: window.buckets, models: window.models, chartStart: window.chartStart, chartInterval: window.chartInterval, chartSlotCount: window.chartSlotCount)
     }
 
     public func claudePresentation(for period: ClaudeUsagePeriod) -> ClaudeUsagePresentation {
@@ -233,7 +243,7 @@ public enum ProviderPayload {
             ].compactMap { $0 }
         }
         let todayWindow = claudeWindows?.first { $0.period == .today }
-        let fallbackDetail = payload.month?.tokens.map { "\(compact($0)) tokens · Today usage" } ?? "No Today usage data"
+        let fallbackDetail = payload.month?.tokens.map { "\(compact($0)) tokens · Last 24h usage" } ?? "No Last 24h usage data"
         let heroText = todayWindow?.heroText ?? "--"
         let detailText = todayWindow?.detailText ?? fallbackDetail
         let quotas: [ProviderQuota] = [
@@ -279,22 +289,38 @@ public enum ProviderPayload {
 
     private static func decodeCodex(_ data: Data, observedAt: Date) throws -> AIProviderSnapshot {
         let payload = try JSONDecoder().decode(CodexPayload.self, from: data)
+        let codexWindows = payload.usageWindows.map { windows in
+            [
+                windows.today.map { codexUsageWindow(period: .today, payload: $0) },
+                windows.sevenDay.map { codexUsageWindow(period: .sevenDay, payload: $0) },
+                windows.month.map { codexUsageWindow(period: .month, payload: $0) }
+            ].compactMap { $0 }
+        }
+        let todayWindow = codexWindows?.first { $0.period == .today }
         let used = payload.quota.first?.usedPercent ?? 0
         let buckets = payload.bins.map {
             UsageBucket(bucket: Date(timeIntervalSince1970: TimeInterval($0.bucket) / 1000), model: $0.model, tokens: $0.tokens)
         }
         return .init(
             provider: .codex, observedAt: observedAt, title: "CODEX",
-            heroText: String(format: "$%.2f", payload.monthCost ?? 0),
-            detailText: "\(compact(Double(payload.monthTokens))) tokens · \(payload.quota.first?.label ?? "Quota") quota",
+            heroText: todayWindow?.heroText ?? String(format: "$%.2f", payload.monthCost ?? 0),
+            detailText: todayWindow?.detailText ?? "\(compact(Double(payload.monthTokens))) tokens · \(payload.quota.first?.label ?? "Quota") quota",
             progress: min(max(used / 100, 0), 1), buckets: buckets,
             models: Array(Set(buckets.map(\.model))).sorted(), priceModeSupported: false,
             metrics: [
                 .init(label: "Month", value: String(format: "$%.2f", payload.monthCost ?? 0)),
                 .init(label: "Context", value: payload.current.map { "\(Int((Double($0.tokens) / Double(max($0.contextWindow, 1)) * 100).rounded()))%" } ?? "--")
             ],
-            quotas: payload.quota.map { .init(label: $0.label, usedPercent: $0.usedPercent, detail: "\(Int($0.remainingPercent.rounded()))% left") }
+            quotas: payload.quota.map { .init(label: $0.label, usedPercent: $0.usedPercent, detail: "\(Int($0.remainingPercent.rounded()))% left") },
+            codexWindows: codexWindows
         )
+    }
+
+    private static func codexUsageWindow(period: ClaudeUsagePeriod, payload: CodexUsageWindowPayload) -> ClaudeUsageWindow {
+        let buckets = payload.bins.flatMap { bin in
+            bin.models.map { UsageBucket(bucket: Date(timeIntervalSince1970: TimeInterval(bin.t) / 1000), model: $0.key, tokens: $0.value) }
+        }
+        return .init(period: period, heroText: claudeDollars(payload.cost), detailText: "\(compact(payload.tokens)) tokens · \(period.usageLabel) usage", buckets: buckets, models: Array(Set(buckets.map(\.model))).sorted(), chartStart: Date(timeIntervalSince1970: TimeInterval(payload.start) / 1000), chartInterval: TimeInterval(payload.bucketMs) / 1000, chartSlotCount: payload.bins.count)
     }
 
     private static func compact(_ value: Double) -> String {
@@ -347,6 +373,21 @@ public enum ProviderPayload {
         let monthTokens: Int
         let monthCost: Double?
         let current: CodexCurrent?
+        let usageWindows: CodexUsageWindowsPayload?
+    }
+
+    private struct CodexUsageWindowsPayload: Decodable {
+        let today: CodexUsageWindowPayload?
+        let sevenDay: CodexUsageWindowPayload?
+        let month: CodexUsageWindowPayload?
+    }
+
+    private struct CodexUsageWindowPayload: Decodable {
+        let start: Int64
+        let bucketMs: Int64
+        let cost: Double
+        let tokens: Double
+        let bins: [ClaudeBin]
     }
 
     private struct CodexBin: Decodable {

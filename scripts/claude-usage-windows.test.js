@@ -178,3 +178,34 @@ test('native graph cache ignores and preserves the Übersicht graph cache', () =
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('native graph uses the same rolling 24-hour range for totals and bins', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-rolling-window-'));
+  const scripts = path.join(root, 'Resources', 'scripts');
+  const home = path.join(root, 'home');
+  fs.mkdirSync(path.join(home, '.claude', 'projects', 'fixture'), { recursive: true });
+  fs.mkdirSync(scripts, { recursive: true });
+  for (const file of ['claude-status.sh', 'status.js', 'claude-usage-windows.js']) {
+    fs.copyFileSync(path.join(__dirname, file), path.join(scripts, file));
+  }
+  const now = Date.now();
+  const events = [
+    { age: 23 * hour, id: 'inside', tokens: 100 },
+    { age: 25 * hour, id: 'outside', tokens: 200 },
+  ].map(({ age, id, tokens }) => JSON.stringify({
+    timestamp: new Date(now - age).toISOString(),
+    requestId: id,
+    message: { id, model: 'claude-sonnet-4-6', usage: { input_tokens: tokens } },
+  })).join('\n');
+  fs.writeFileSync(path.join(home, '.claude', 'projects', 'fixture', 'session.jsonl'), `${events}\n`);
+
+  try {
+    const payload = JSON.parse(execFileSync('/bin/bash', [
+      path.join(scripts, 'claude-status.sh'), 'graph', 'native-graph',
+    ], { encoding: 'utf8', env: { ...process.env, HOME: home } }));
+    assert.equal(payload.usageWindows.today.tokens, 100);
+    assert.equal(payload.usageWindows.today.bins.length, 48);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

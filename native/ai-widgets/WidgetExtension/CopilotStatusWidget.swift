@@ -37,6 +37,7 @@ struct CopilotEntry: TimelineEntry {
     let selection: WidgetProviderSelection
     let mode: PriceDisplayMode
     let claudePeriod: ClaudeUsagePeriod
+    let codexPeriod: ClaudeUsagePeriod
 }
 
 struct CopilotTimelineProvider: AppIntentTimelineProvider {
@@ -44,7 +45,7 @@ struct CopilotTimelineProvider: AppIntentTimelineProvider {
     private let logger = Logger(subsystem: CopilotWidgetPaths.widgetBundleIdentifier, category: "timeline")
 
     func placeholder(in context: Context) -> CopilotEntry {
-        .init(date: .now, snapshot: nil, selection: .required, mode: priceMode, claudePeriod: claudePeriod)
+        .init(date: .now, snapshot: nil, selection: .required, mode: priceMode, claudePeriod: claudePeriod, codexPeriod: codexPeriod)
     }
 
     func snapshot(for configuration: ProviderConfigurationIntent, in context: Context) async -> CopilotEntry {
@@ -64,6 +65,10 @@ struct CopilotTimelineProvider: AppIntentTimelineProvider {
         ClaudeUsagePeriod.fromStoredValue(UserDefaults.standard.string(forKey: CycleClaudeUsagePeriodIntent.key))
     }
 
+    private var codexPeriod: ClaudeUsagePeriod {
+        ClaudeUsagePeriod.fromStoredValue(UserDefaults.standard.string(forKey: CycleCodexUsagePeriodIntent.key))
+    }
+
     private func entry(selection: WidgetProviderSelection, date: Date = .now) -> CopilotEntry {
         let snapshot: AIProviderSnapshot?
         if case .selected(let provider) = selection {
@@ -73,7 +78,7 @@ struct CopilotTimelineProvider: AppIntentTimelineProvider {
             snapshot = nil
             logger.notice("provider=missing snapshot=missing")
         }
-        return .init(date: date, snapshot: snapshot, selection: selection, mode: priceMode, claudePeriod: claudePeriod)
+        return .init(date: date, snapshot: snapshot, selection: selection, mode: priceMode, claudePeriod: claudePeriod, codexPeriod: codexPeriod)
     }
 }
 
@@ -109,10 +114,12 @@ struct CopilotStatusWidgetView: View {
 
     private func content(snapshot: AIProviderSnapshot) -> some View {
         let claudePresentation = snapshot.provider == .claude ? snapshot.claudePresentation(for: entry.claudePeriod) : nil
-        let heroText = claudePresentation?.heroText ?? (entry.mode == .estimatedValue ? (snapshot.alternateHeroText ?? snapshot.heroText) : snapshot.heroText)
-        let detailText = claudePresentation?.detailText ?? (entry.mode == .estimatedValue ? (snapshot.alternateDetailText ?? snapshot.detailText) : snapshot.detailText)
-        let buckets = claudePresentation?.buckets ?? snapshot.buckets
-        let models = claudePresentation?.models ?? snapshot.models
+        let codexPresentation = snapshot.provider == .codex ? snapshot.codexPresentation(for: entry.codexPeriod) : nil
+        let presentation = claudePresentation ?? codexPresentation
+        let heroText = presentation?.heroText ?? (entry.mode == .estimatedValue ? (snapshot.alternateHeroText ?? snapshot.heroText) : snapshot.heroText)
+        let detailText = presentation?.detailText ?? (entry.mode == .estimatedValue ? (snapshot.alternateDetailText ?? snapshot.detailText) : snapshot.detailText)
+        let buckets = presentation?.buckets ?? snapshot.buckets
+        let models = presentation?.models ?? snapshot.models
         let compact = family == .systemSmall
         let large = family == .systemLarge
 
@@ -120,7 +127,7 @@ struct CopilotStatusWidgetView: View {
             HStack {
                 Text(snapshot.title).font(.system(size: large ? 12 : compact ? 9 : 10, weight: .semibold)).tracking(0.8)
                 Spacer()
-                Text(claudePresentation?.headerLabel ?? "last 24h").foregroundStyle(.white.opacity(0.75))
+                Text(presentation?.headerLabel ?? "last 24h").foregroundStyle(.white.opacity(0.75))
             }
             .font(.system(size: large ? 11 : compact ? 8 : 9))
             .padding(.bottom, 2)
@@ -129,9 +136,9 @@ struct CopilotStatusWidgetView: View {
                 buckets: buckets,
                 models: models,
                 provider: snapshot.provider,
-                chartStart: claudePresentation?.chartStart,
-                chartInterval: claudePresentation?.chartInterval,
-                chartSlotCount: claudePresentation?.chartSlotCount,
+                chartStart: presentation?.chartStart,
+                chartInterval: presentation?.chartInterval,
+                chartSlotCount: presentation?.chartSlotCount,
                 compact: compact
             )
                 .frame(height: large ? 140 : compact ? 50 : 40)
@@ -151,7 +158,7 @@ struct CopilotStatusWidgetView: View {
             progressBar(snapshot.progress, color: .blue)
         }
         metricRow(snapshot.metrics, compact: compact)
-        if snapshot.provider != .copilot {
+        if snapshot.provider == .claude {
             quotaRows(snapshot.quotas, color: accent(for: snapshot.provider), compact: compact)
         }
     }
@@ -210,6 +217,11 @@ struct CopilotStatusWidgetView: View {
         Group {
             if snapshot.provider == .claude {
                 Button(intent: CycleClaudeUsagePeriodIntent()) {
+                    usageText(heroText: heroText, detailText: detailText, compact: compact, large: large)
+                }
+                .buttonStyle(.plain)
+            } else if snapshot.provider == .codex {
+                Button(intent: CycleCodexUsagePeriodIntent()) {
                     usageText(heroText: heroText, detailText: detailText, compact: compact, large: large)
                 }
                 .buttonStyle(.plain)
