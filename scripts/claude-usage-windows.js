@@ -44,4 +44,27 @@ function splitDailyTotals(report) {
   return { legacy: report.totals || null, window: claudeTotals(report) };
 }
 
-module.exports = { buildUsageWindows, claudeTotals, splitDailyTotals, usageScanStart };
+function localDate(timestamp) {
+  const date = new Date(timestamp);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function estimateRollingCost(events, start, end, daily) {
+  const tokensByDate = {};
+  for (const event of events) {
+    if (event.timestamp < start || event.timestamp >= end) continue;
+    const date = localDate(event.timestamp);
+    tokensByDate[date] = (tokensByDate[date] || 0) + event.tokens;
+  }
+  const dates = Object.keys(tokensByDate);
+  if (!dates.length) return null;
+  let cost = 0;
+  for (const date of dates) {
+    const total = daily[date];
+    if (!total || !total.tokens) return null;
+    cost += total.cost * tokensByDate[date] / total.tokens;
+  }
+  return cost;
+}
+
+module.exports = { buildUsageWindows, claudeTotals, estimateRollingCost, splitDailyTotals, usageScanStart };

@@ -7,6 +7,7 @@ const path = require('node:path');
 const {
   buildUsageWindows,
   claudeTotals,
+  estimateRollingCost,
   splitDailyTotals,
   usageScanStart,
 } = require('./claude-usage-windows');
@@ -61,6 +62,21 @@ test('separates all-agent legacy totals from Claude window totals', () => {
     legacy: { totalCost: 13, totalTokens: 1200, totalInputTokens: 1000 },
     window: { totalCost: 4, totalTokens: 300 },
   });
+});
+
+test('estimates a rolling cost from the matching portions of daily totals', () => {
+  const start = Date.UTC(2026, 7, 10, 12);
+  const end = Date.UTC(2026, 7, 11, 12);
+  const events = [
+    { timestamp: start, tokens: 100 },
+    { timestamp: end - hour, tokens: 200 },
+  ];
+  const daily = {
+    '2026-08-10': { cost: 10, tokens: 400 },
+    '2026-08-11': { cost: 6, tokens: 300 },
+  };
+
+  assert.equal(estimateRollingCost(events, start, end, daily), 6.5);
 });
 
 test('builds Today, 7D, and month with matching calendar costs', () => {
