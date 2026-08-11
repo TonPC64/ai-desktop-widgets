@@ -35,8 +35,11 @@ const empty = (error) => ({
 try {
   const stat = fs.statSync(cacheFile);
   if (NOW - stat.mtimeMs < CACHE_TTL) {
-    process.stdout.write(fs.readFileSync(cacheFile, "utf8"));
-    process.exit(0);
+    const cached = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
+    if (cached.usageWindows && cached.usageWindows.month) {
+      process.stdout.write(JSON.stringify(cached));
+      process.exit(0);
+    }
   }
 } catch (_) {}
 
