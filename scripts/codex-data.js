@@ -28,14 +28,18 @@ const cacheFile = path.join(cacheDir, "data.json");
 const empty = (error) => ({
   bins: [], quota: [], current: null, todayTokens: 0, monthTokens: 0,
   todayCost: 0, monthCost: 0, todayUnpricedTokens: 0, monthUnpricedTokens: 0,
+  usageWindows: {},
   observedAt: new Date(NOW).toISOString(), error: error || null,
 });
 
 try {
   const stat = fs.statSync(cacheFile);
   if (NOW - stat.mtimeMs < CACHE_TTL) {
-    process.stdout.write(fs.readFileSync(cacheFile, "utf8"));
-    process.exit(0);
+    const cached = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
+    if (cached.usageWindows && cached.usageWindows.month) {
+      process.stdout.write(JSON.stringify(cached));
+      process.exit(0);
+    }
   }
 } catch (_) {}
 
@@ -197,6 +201,7 @@ function build() {
   // retained so a temporarily absent quota record can still be shown.
   const candidates = files.filter((item, i) => item.mtime >= monthStart.getTime() || i < 20);
   const binMap = new Map();
+  const usageEvents = [];
   let latestCurrent = null;
   let latestQuota = null;
   let todayTokens = 0;
@@ -234,6 +239,10 @@ function build() {
       const cost = estimatedCost(model, lastUsage);
       const contextWindow = Number(info.model_context_window) || 0;
 
+      if (last > 0 && timestamp >= monthStart.getTime() && timestamp <= NOW + 60000) {
+        usageEvents.push({ timestamp, model: modelGroup(model), tokens: last, cost });
+      }
+
       if (last > 0 && timestamp >= NOW - DAY && timestamp <= NOW + 60000) {
         const bucket = Math.floor(timestamp / SLOT) * SLOT;
         const group = modelGroup(model);
@@ -267,8 +276,38 @@ function build() {
     return { bucket: Number(key.slice(0, split)), model: key.slice(split + 1), tokens };
   }).sort((a, b) => a.bucket - b.bucket || a.model.localeCompare(b.model));
 
+  function usageWindow(start, bucketMs) {
+    const binMap = new Map();
+    let tokens = 0;
+    let cost = 0;
+    for (const event of usageEvents) {
+      if (event.timestamp < start) continue;
+      const bucket = start + Math.floor((event.timestamp - start) / bucketMs) * bucketMs;
+      const key = `${bucket}:${event.model}`;
+      binMap.set(key, (binMap.get(key) || 0) + event.tokens);
+      tokens += event.tokens;
+      if (event.cost !== null) cost += event.cost;
+    }
+    const windowBins = Array.from({ length: Math.ceil((NOW - start) / bucketMs) }, (_, i) => ({
+      t: start + i * bucketMs, models: {},
+    }));
+    for (const [key, value] of binMap) {
+      const split = key.lastIndexOf(":");
+      const bucket = Number(key.slice(0, split));
+      const bin = windowBins[Math.floor((bucket - start) / bucketMs)];
+      bin.models[key.slice(split + 1)] = value;
+    }
+    return { start, bucketMs, cost, tokens, bins: windowBins };
+  }
+  const usageWindows = {
+    today: usageWindow(NOW - DAY, SLOT),
+    sevenDay: usageWindow(NOW - 7 * DAY, 4 * 60 * 60 * 1000),
+    month: usageWindow(monthStart.getTime(), DAY),
+  };
+
   return {
     bins,
+    usageWindows,
     quota: latestQuota ? latestQuota.quota : [],
     quotaObservedAt: latestQuota ? new Date(latestQuota.timestamp).toISOString() : null,
     current: latestCurrent && NOW - latestCurrent.timestamp <= 15 * 60 * 1000 ? {

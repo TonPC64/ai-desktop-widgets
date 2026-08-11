@@ -13,7 +13,7 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { buildUsageWindows, splitDailyTotals, usageScanStart } = require('./claude-usage-windows');
+const { buildUsageWindows, estimateRollingCost, splitDailyTotals, usageScanStart } = require('./claude-usage-windows');
 
 // Resolve the .bin symlink and run it with our own node binary: desktop
 // launchers can use a minimal PATH where `#!/usr/bin/env node`
@@ -373,11 +373,10 @@ try {
     const end = Math.ceil(now / BIN_MS) * BIN_MS;
     const start = end - 48 * BIN_MS;
     const nowDate = new Date(now);
-    const todayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
     const sevenDayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate() - 6);
     const monthStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), 1);
     const starts = {
-      today: todayStart.getTime(),
+      today: start,
       sevenDay: sevenDayStart.getTime(),
       month: monthStart.getTime(),
     };
@@ -440,11 +439,18 @@ try {
       try { return splitDailyTotals(ccusage(['daily', '--since', String(ymd), '--by-agent'])); }
       catch { return { legacy: null, window: null }; }
     }
-    const todayTotals = dailyTotalsSince(todayStart);
+    function claudeDailyTotalsSince(date) {
+      const ymd = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+      try {
+        return Object.fromEntries((ccusage(['claude', 'daily', '--since', String(ymd)]).daily || [])
+          .map((day) => [day.date, { cost: day.totalCost, tokens: day.totalTokens }]));
+      } catch { return {}; }
+    }
     const totals = dailyTotalsSince(sevenDayStart);
     const monthTotals = dailyTotalsSince(monthStart);
+    const todayCost = estimateRollingCost(events, start, now, claudeDailyTotalsSince(new Date(start)));
     const windows = buildUsageWindows(events, now, starts, {
-      today: todayTotals.window?.totalCost,
+      today: todayCost,
       sevenDay: totals.window?.totalCost,
       month: monthTotals.window?.totalCost,
     });

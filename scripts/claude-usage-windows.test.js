@@ -7,6 +7,7 @@ const path = require('node:path');
 const {
   buildUsageWindows,
   claudeTotals,
+  estimateRollingCost,
   splitDailyTotals,
   usageScanStart,
 } = require('./claude-usage-windows');
@@ -61,6 +62,21 @@ test('separates all-agent legacy totals from Claude window totals', () => {
     legacy: { totalCost: 13, totalTokens: 1200, totalInputTokens: 1000 },
     window: { totalCost: 4, totalTokens: 300 },
   });
+});
+
+test('estimates a rolling cost from the matching portions of daily totals', () => {
+  const start = Date.UTC(2026, 7, 10, 12);
+  const end = Date.UTC(2026, 7, 11, 12);
+  const events = [
+    { timestamp: start, tokens: 100 },
+    { timestamp: end - hour, tokens: 200 },
+  ];
+  const daily = {
+    '2026-08-10': { cost: 10, tokens: 400 },
+    '2026-08-11': { cost: 6, tokens: 300 },
+  };
+
+  assert.equal(estimateRollingCost(events, start, end, daily), 6.5);
 });
 
 test('builds Today, 7D, and month with matching calendar costs', () => {
@@ -174,6 +190,37 @@ test('native graph cache ignores and preserves the Übersicht graph cache', () =
     assert.ok(payload.usageWindows.sevenDay);
     assert.ok(payload.usageWindows.month);
     assert.equal(fs.readFileSync(legacyCache, 'utf8'), legacy);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('native graph uses the same rolling 24-hour range for totals and bins', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-rolling-window-'));
+  const scripts = path.join(root, 'Resources', 'scripts');
+  const home = path.join(root, 'home');
+  fs.mkdirSync(path.join(home, '.claude', 'projects', 'fixture'), { recursive: true });
+  fs.mkdirSync(scripts, { recursive: true });
+  for (const file of ['claude-status.sh', 'status.js', 'claude-usage-windows.js']) {
+    fs.copyFileSync(path.join(__dirname, file), path.join(scripts, file));
+  }
+  const now = Date.now();
+  const events = [
+    { age: 23 * hour, id: 'inside', tokens: 100 },
+    { age: 25 * hour, id: 'outside', tokens: 200 },
+  ].map(({ age, id, tokens }) => JSON.stringify({
+    timestamp: new Date(now - age).toISOString(),
+    requestId: id,
+    message: { id, model: 'claude-sonnet-4-6', usage: { input_tokens: tokens } },
+  })).join('\n');
+  fs.writeFileSync(path.join(home, '.claude', 'projects', 'fixture', 'session.jsonl'), `${events}\n`);
+
+  try {
+    const payload = JSON.parse(execFileSync('/bin/bash', [
+      path.join(scripts, 'claude-status.sh'), 'graph', 'native-graph',
+    ], { encoding: 'utf8', env: { ...process.env, HOME: home } }));
+    assert.equal(payload.usageWindows.today.tokens, 100);
+    assert.equal(payload.usageWindows.today.bins.length, 48);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
