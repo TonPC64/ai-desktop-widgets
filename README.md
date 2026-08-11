@@ -35,7 +35,7 @@ The installer copies selected widgets to `~/Library/Application Support/Übersic
 
 ## Native AI Widgets (macOS 15+)
 
-The native **AI Widgets** app is an alternative to Übersicht. It has no Dock icon or menu bar, reads the same local Copilot data, and is available in Small, Medium, and Large WidgetKit sizes. Medium and Large show a full color-matched model legend; clicking the monthly usage percentage toggles an **estimated** AIU value. It is not a GitHub billing total.
+The native **AI Widgets** app is an alternative to Übersicht. It has no Dock icon or menu bar, reads the same local data, and is available in Small, Medium, and Large WidgetKit sizes. Choose **Copilot**, **Claude**, or **Codex** from the widget configuration screen. Copilot’s monthly usage percentage can be clicked to toggle an **estimated** AIU value; it is not a GitHub billing total.
 
 It requires full Xcode and macOS 15 or later:
 
@@ -43,7 +43,7 @@ It requires full Xcode and macOS 15 or later:
 bash native/ai-widgets/scripts/install-local-widget.sh
 ```
 
-Then add **Copilot Status** from the macOS Widget Gallery. The installer starts a local background helper that runs the existing read-only collector once per minute. It does not install or modify Codex hooks.
+Then add **AI Status** from the macOS Widget Gallery and choose the provider in the widget’s configuration screen. The installer starts a local background helper that runs the existing read-only collectors once per minute. It does not install or modify Codex hooks.
 
 ## Widget selection
 

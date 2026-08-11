@@ -8,11 +8,12 @@
 set -u
 
 MODE="${1:-block}"
+CACHE_KEY="${2:-$MODE}"
 # ${BASH_SOURCE[0]:-$0}: some launchers execute script contents via bash -c,
 # where BASH_SOURCE is unset and set -u would abort.
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 CACHE_DIR="${HOME}/.cache/claude-touchbar"
-CACHE="${CACHE_DIR}/${MODE}.txt"
+CACHE="${CACHE_DIR}/${CACHE_KEY}.txt"
 TTL=30
 case "$MODE" in week|graph) TTL=300 ;; esac
 

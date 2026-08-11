@@ -13,17 +13,18 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { buildUsageWindows, splitDailyTotals, usageScanStart } = require('./claude-usage-windows');
 
 // Resolve the .bin symlink and run it with our own node binary: desktop
 // launchers can use a minimal PATH where `#!/usr/bin/env node`
 // shebangs fail.
-const CCUSAGE = fs.realpathSync(
-  path.join(__dirname, '..', 'node_modules', '.bin', 'ccusage')
-);
 const mode = process.argv[2] || 'block';
 
 function ccusage(args) {
-  const out = execFileSync(process.execPath, [CCUSAGE, ...args, '--json'], {
+  const ccusage = fs.realpathSync(
+    path.join(__dirname, '..', 'node_modules', '.bin', 'ccusage')
+  );
+  const out = execFileSync(process.execPath, [ccusage, ...args, '--json'], {
     encoding: 'utf8',
     timeout: 30000,
     env: {
@@ -371,6 +372,16 @@ try {
     const now = Date.now();
     const end = Math.ceil(now / BIN_MS) * BIN_MS;
     const start = end - 48 * BIN_MS;
+    const nowDate = new Date(now);
+    const todayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+    const sevenDayStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate() - 6);
+    const monthStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), 1);
+    const starts = {
+      today: todayStart.getTime(),
+      sevenDay: sevenDayStart.getTime(),
+      month: monthStart.getTime(),
+    };
+    const scanStart = usageScanStart(starts);
     const bins = Array.from({ length: 48 }, (_, i) => ({
       t: start + i * BIN_MS,
       models: {},
@@ -378,6 +389,7 @@ try {
 
     const projects = path.join(os.homedir(), '.claude', 'projects');
     const seen = new Set();
+    const events = [];
     let dirs = [];
     try { dirs = fs.readdirSync(projects); } catch {}
     for (const dir of dirs) {
@@ -389,7 +401,7 @@ try {
         const p = path.join(full, f);
         let st;
         try { st = fs.statSync(p); } catch { continue; }
-        if (st.mtimeMs < start) continue; // no entries in our window
+        if (st.mtimeMs < scanStart) continue; // no entries in our windows
         let lines;
         try { lines = fs.readFileSync(p, 'utf8').split('\n'); } catch { continue; }
         for (const line of lines) {
@@ -397,7 +409,7 @@ try {
           let j;
           try { j = JSON.parse(line); } catch { continue; }
           const ts = Date.parse(j.timestamp);
-          if (!(ts >= start && ts < end)) continue;
+          if (!(ts >= scanStart && ts < end)) continue;
           const u = j.message && j.message.usage;
           if (!u) continue;
           const id = `${(j.message && j.message.id) || ''}:${j.requestId || ''}`;
@@ -412,29 +424,30 @@ try {
           const model = ((j.message && j.message.model) || 'other')
             .replace(/^claude-/, '')
             .replace(/-\d{8}$/, '');
-          const bin = bins[Math.floor((ts - start) / BIN_MS)];
-          bin.models[model] = (bin.models[model] || 0) + tokens;
+          events.push({ timestamp: ts, model, tokens });
+          if (ts >= start) {
+            const bin = bins[Math.floor((ts - start) / BIN_MS)];
+            bin.models[model] = (bin.models[model] || 0) + tokens;
+          }
         }
       }
     }
 
     let block = null;
-    let totals = null;
-    let monthTotals = null;
     try { block = (ccusage(['blocks', '--active']).blocks || [])[0] || null; } catch {}
-    try {
-      const since = new Date(now - 7 * 86400000);
-      const ymd =
-        since.getFullYear() * 10000 + (since.getMonth() + 1) * 100 + since.getDate();
-      totals = ccusage(['daily', '--since', String(ymd)]).totals || null;
-    } catch {}
-    try {
-      const nowDate = new Date(now);
-      const monthStart = new Date(nowDate.getFullYear(), nowDate.getMonth(), 1);
-      const mYmd =
-        monthStart.getFullYear() * 10000 + (monthStart.getMonth() + 1) * 100 + monthStart.getDate();
-      monthTotals = ccusage(['daily', '--since', String(mYmd)]).totals || null;
-    } catch {}
+    function dailyTotalsSince(date) {
+      const ymd = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+      try { return splitDailyTotals(ccusage(['daily', '--since', String(ymd), '--by-agent'])); }
+      catch { return { legacy: null, window: null }; }
+    }
+    const todayTotals = dailyTotalsSince(todayStart);
+    const totals = dailyTotalsSince(sevenDayStart);
+    const monthTotals = dailyTotalsSince(monthStart);
+    const windows = buildUsageWindows(events, now, starts, {
+      today: todayTotals.window?.totalCost,
+      sevenDay: totals.window?.totalCost,
+      month: monthTotals.window?.totalCost,
+    });
 
     console.log(
       JSON.stringify({
@@ -442,6 +455,7 @@ try {
         quota: fetchQuota(),
         quotaHistory: readQuotaHistory(start, 5 * 60 * 1000),
         bins,
+        usageWindows: windows,
         block: block && {
           cost: block.costUSD,
           tokens: block.totalTokens,
@@ -450,8 +464,8 @@ try {
           projectedCost: block.projection ? block.projection.totalCost : null,
           models: (block.models || []).map((m) => m.replace(/^claude-/, '')),
         },
-        week: totals && { cost: totals.totalCost, tokens: totals.totalTokens },
-        month: monthTotals && { cost: monthTotals.totalCost, tokens: monthTotals.totalTokens },
+        week: totals.legacy && { cost: totals.legacy.totalCost, tokens: totals.legacy.totalTokens },
+        month: monthTotals.legacy && { cost: monthTotals.legacy.totalCost, tokens: monthTotals.legacy.totalTokens },
       })
     );
   } else {

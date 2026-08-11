@@ -15,3 +15,15 @@ struct TogglePriceModeIntent: AppIntent {
         return .result()
     }
 }
+
+struct CycleClaudeUsagePeriodIntent: AppIntent {
+    static let title: LocalizedStringResource = "Change Claude usage period"
+    static let key = "claude.widget.usage-period"
+
+    func perform() async throws -> some IntentResult {
+        let current = ClaudeUsagePeriod.fromStoredValue(UserDefaults.standard.string(forKey: Self.key))
+        UserDefaults.standard.set(current.next.rawValue, forKey: Self.key)
+        WidgetCenter.shared.reloadTimelines(ofKind: CopilotWidgetPaths.widgetKind)
+        return .result()
+    }
+}

@@ -2,6 +2,7 @@ node_modules/
 .build/
 native/ai-widgets/dist/
 .superpowers/
+.worktrees/
 docs/superpowers/
 .DS_Store
 *.log
