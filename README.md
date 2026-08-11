@@ -1,6 +1,9 @@
 # AI Desktop Widgets
 
-Usage widgets for [Übersicht](https://tracesof.net/uebersicht/) on macOS. Keep an eye on Claude Code, GitHub Copilot CLI, and Codex without leaving your desktop.
+Desktop widgets for monitoring AI CLI usage on macOS. Includes two flavors:
+
+- **Übersicht widgets** — live overlays for Claude Code, GitHub Copilot CLI, Codex, and Antigravity CLI running on your desktop.
+- **Native WidgetKit app** (macOS 15+) — a standard macOS widget for Claude, Copilot, and Codex that lives in Notification Center or on the desktop, with no Dock icon or menu bar.
 
 <img width="1285" height="391" alt="widgets" src="https://github.com/user-attachments/assets/b8e3d15b-4537-406a-9a70-940c1bf057b7" />
 
@@ -13,7 +16,7 @@ Usage widgets for [Übersicht](https://tracesof.net/uebersicht/) on macOS. Keep 
 
 ## Requirements
 
-- macOS and Übersicht.
+- macOS and [Übersicht](https://tracesof.net/uebersicht/).
 - Node.js and npm for the Claude Code and Codex widgets.
 - The CLI and local session data for each widget you install:
   - Claude Code, signed in, for `claude`.
@@ -35,15 +38,33 @@ The installer copies selected widgets to `~/Library/Application Support/Übersic
 
 ## Native AI Widgets (macOS 15+)
 
-The native **AI Widgets** app is an alternative to Übersicht. It has no Dock icon or menu bar, reads the same local data, and is available in Small, Medium, and Large WidgetKit sizes. Choose **Copilot**, **Claude**, or **Codex** from the widget configuration screen. Copilot’s monthly usage percentage can be clicked to toggle an **estimated** AIU value; it is not a GitHub billing total.
+The native **AI Widgets** app is a WidgetKit alternative to Übersicht. It has no Dock icon or menu bar, reads the same local data as the Übersicht widgets, and refreshes every five minutes.
 
-It requires full Xcode and macOS 15 or later:
+### Sizes and providers
+
+The widget comes in **Small**, **Medium**, and **Large** WidgetKit sizes. After installing, add **AI Status** from the macOS Widget Gallery and choose a provider in the widget configuration screen:
+
+| Provider | What it shows |
+|----------|---------------|
+| **Claude** | 24h / 7-day / monthly token spend, model color bars, 7-day quota percentage, monthly token total. Tap the widget to cycle through time periods. |
+| **Copilot** | Monthly AIU percentage with a progress ring, today's AIU / token / request counts. Tap to toggle between the quota percentage view and an estimated dollar value (not a GitHub billing total). |
+| **Codex** | Today's cost estimate, monthly spend, context-window fill, and subscription quota bars. Tap to cycle between today / 7-day / monthly usage windows. |
+
+### Requirements
+
+- macOS 15 or later
+- Full Xcode (installed and license accepted)
+- The same CLI data as the Übersicht counterpart (signed-in `claude`, `gh copilot`, or `codex`)
+
+### Install
 
 ```sh
 bash native/ai-widgets/scripts/install-local-widget.sh
 ```
 
-Then add **AI Status** from the macOS Widget Gallery and choose the provider in the widget’s configuration screen. The installer starts a local background helper that runs the existing read-only collectors once per minute. It does not install or modify Codex hooks.
+The script builds the app, copies it to `~/Applications/AI Widgets.app`, registers the widget extension with WidgetKit, and launches the background helper (`CopilotWidgetHost`) that runs the read-only collectors once per minute. It does not install or modify any Codex hooks.
+
+After the script completes, open the macOS Widget Gallery (long-press the desktop or open Notification Center), search for **AI Status**, and add it. Use the widget's configuration screen to select the provider.
 
 ## Widget selection
 
