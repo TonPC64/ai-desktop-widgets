@@ -11,9 +11,12 @@
 		100000000000000000000002 /* WidgetExtension/LiquidGlassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* WidgetExtension/LiquidGlassView.swift */; };
 		100000000000000000000003 /* WidgetExtension/UsageChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* WidgetExtension/UsageChartView.swift */; };
 		100000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift */; };
+		10000000000000000000000C /* WidgetExtension/ProviderConfigurationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* WidgetExtension/ProviderConfigurationIntent.swift */; };
 		100000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift */; };
 		100000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift */; };
 		100000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift */; };
+		10000000000000000000000D /* Sources/CopilotWidgetCore/AIProviderSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* Sources/CopilotWidgetCore/AIProviderSnapshot.swift */; };
+		10000000000000000000000E /* Sources/CopilotWidgetCore/CollectorPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000F /* Sources/CopilotWidgetCore/CollectorPayload.swift */; };
 		100000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework */; };
 		10000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework */; };
 		10000000000000000000000B /* System/Library/Frameworks/AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* System/Library/Frameworks/AppIntents.framework */; };
@@ -24,9 +27,12 @@
 		200000000000000000000002 /* WidgetExtension/LiquidGlassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/LiquidGlassView.swift; sourceTree = SOURCE_ROOT; };
 		200000000000000000000003 /* WidgetExtension/UsageChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/UsageChartView.swift; sourceTree = SOURCE_ROOT; };
 		200000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/TogglePriceModeIntent.swift; sourceTree = SOURCE_ROOT; };
+		20000000000000000000000D /* WidgetExtension/ProviderConfigurationIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension/ProviderConfigurationIntent.swift; sourceTree = SOURCE_ROOT; };
 		200000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift; sourceTree = SOURCE_ROOT; };
 		200000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/SnapshotStore.swift; sourceTree = SOURCE_ROOT; };
 		200000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/WidgetPresentation.swift; sourceTree = SOURCE_ROOT; };
+		20000000000000000000000E /* Sources/CopilotWidgetCore/AIProviderSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/AIProviderSnapshot.swift; sourceTree = SOURCE_ROOT; };
+		20000000000000000000000F /* Sources/CopilotWidgetCore/CollectorPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/CopilotWidgetCore/CollectorPayload.swift; sourceTree = SOURCE_ROOT; };
 		200000000000000000000008 /* WidgetExtension/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = WidgetExtension/Info.plist; sourceTree = SOURCE_ROOT; };
 		200000000000000000000009 /* System/Library/Frameworks/WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		20000000000000000000000A /* System/Library/Frameworks/SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -64,9 +70,12 @@
 				200000000000000000000002 /* WidgetExtension/LiquidGlassView.swift */,
 				200000000000000000000003 /* WidgetExtension/UsageChartView.swift */,
 				200000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift */,
+				20000000000000000000000D /* WidgetExtension/ProviderConfigurationIntent.swift */,
 				200000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift */,
 				200000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift */,
 				200000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift */,
+				20000000000000000000000E /* Sources/CopilotWidgetCore/AIProviderSnapshot.swift */,
+				20000000000000000000000F /* Sources/CopilotWidgetCore/CollectorPayload.swift */,
 				200000000000000000000008 /* WidgetExtension/Info.plist */,
 			);
 			name = Sources;
@@ -162,9 +171,12 @@
 				100000000000000000000002 /* WidgetExtension/LiquidGlassView.swift in Sources */,
 				100000000000000000000003 /* WidgetExtension/UsageChartView.swift in Sources */,
 				100000000000000000000004 /* WidgetExtension/TogglePriceModeIntent.swift in Sources */,
+				10000000000000000000000C /* WidgetExtension/ProviderConfigurationIntent.swift in Sources */,
 				100000000000000000000005 /* Sources/CopilotWidgetCore/CopilotUsageSnapshot.swift in Sources */,
 				100000000000000000000006 /* Sources/CopilotWidgetCore/SnapshotStore.swift in Sources */,
 				100000000000000000000007 /* Sources/CopilotWidgetCore/WidgetPresentation.swift in Sources */,
+				10000000000000000000000D /* Sources/CopilotWidgetCore/AIProviderSnapshot.swift in Sources */,
+				10000000000000000000000E /* Sources/CopilotWidgetCore/CollectorPayload.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

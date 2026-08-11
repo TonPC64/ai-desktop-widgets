@@ -13,30 +13,44 @@ enum CopilotWidgetHost {
     }
 
     private static func refresh() {
-        guard let collectorURL = collectorURL() else { return }
+        let store = SnapshotStore(applicationSupportDirectory: CopilotWidgetPaths.hostApplicationSupportDirectory())
+        for collector in collectors() {
+            do {
+                let data = try run(collector)
+                let snapshot = try ProviderPayload.decode(provider: collector.provider, data: data, observedAt: .now)
+                try store.save(snapshot, provider: collector.provider)
+            } catch {
+                continue
+            }
+        }
+        WidgetCenter.shared.reloadTimelines(ofKind: CopilotWidgetPaths.widgetKind)
+    }
+
+    private struct Collector {
+        let provider: AIProvider
+        let path: String
+        let arguments: [String]
+    }
+
+    private static func collectors() -> [Collector] {
+        let resource = Bundle.main.resourceURL
+        return [
+            .init(provider: .copilot, path: ProcessInfo.processInfo.environment["COPILOT_WIDGET_COLLECTOR"] ?? resource?.appending(path: "scripts/copilot-data.sh").path ?? "", arguments: []),
+            .init(provider: .claude, path: resource?.appending(path: "scripts/claude-status.sh").path ?? "", arguments: ["graph", "native-graph"]),
+            .init(provider: .codex, path: resource?.appending(path: "scripts/codex-data.sh").path ?? "", arguments: [])
+        ]
+    }
+
+    private static func run(_ collector: Collector) throws -> Data {
         let process = Process()
         let output = Pipe()
         process.executableURL = URL(filePath: "/bin/bash")
-        process.arguments = [collectorURL.path]
+        process.arguments = [collector.path] + collector.arguments
         process.standardOutput = output
         process.standardError = FileHandle.nullDevice
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-            guard process.terminationStatus == 0 else { return }
-            let snapshot = try CollectorPayload.decode(output.fileHandleForReading.readDataToEndOfFile(), observedAt: .now)
-            try SnapshotStore(url: CopilotWidgetPaths.hostSnapshotURL()).save(snapshot)
-            WidgetCenter.shared.reloadTimelines(ofKind: CopilotWidgetPaths.widgetKind)
-        } catch {
-            return
-        }
-    }
-
-    private static func collectorURL() -> URL? {
-        if let path = ProcessInfo.processInfo.environment["COPILOT_WIDGET_COLLECTOR"] {
-            return URL(filePath: path)
-        }
-        return Bundle.main.resourceURL?.appending(path: "copilot-data.sh")
+        try process.run()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else { throw CocoaError(.fileReadUnknown) }
+        return output.fileHandleForReading.readDataToEndOfFile()
     }
 }
