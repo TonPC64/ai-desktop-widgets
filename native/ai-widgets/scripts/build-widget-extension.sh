@@ -14,6 +14,11 @@ xcodebuild -project "$ROOT/AIWidgetsExtension.xcodeproj" \
 
 rm -rf "$OUTPUT"
 ditto --norsrc "$DERIVED/Build/Products/Release/AI Widgets.appex" "$OUTPUT"
+mkdir -p "$OUTPUT/Contents/Resources"
+xcrun actool --compile "$OUTPUT/Contents/Resources" --platform macosx \
+    --minimum-deployment-target 15.0 --app-icon AppIcon \
+    --output-partial-info-plist "$DERIVED/AppIcon-Info.plist" "$ROOT/Resources/Assets.xcassets"
+/usr/libexec/PlistBuddy -c "Merge $DERIVED/AppIcon-Info.plist" "$OUTPUT/Contents/Info.plist"
 /usr/bin/xattr -cr "$OUTPUT"
 codesign --force --sign - --entitlements "$ROOT/WidgetExtension/CopilotStatusWidget.entitlements" "$OUTPUT"
 codesign --verify --strict --verbose=2 "$OUTPUT"

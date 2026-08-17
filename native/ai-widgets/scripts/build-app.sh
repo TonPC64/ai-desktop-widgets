@@ -15,6 +15,7 @@ APPEX="$APP/Contents/PlugIns/AI Widgets.appex"
 
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/scripts" "$APPEX/Contents/MacOS"
 install -m 755 "$BIN_DIR/CopilotWidgetHost" "$APP/Contents/MacOS/CopilotWidgetHost"
+install -m 644 "$ROOT/Resources/AIWidgets.icns" "$APP/Contents/Resources/AIWidgets.icns"
 install -m 755 "$PROJECT_ROOT/scripts/copilot-data.sh" "$APP/Contents/Resources/scripts/copilot-data.sh"
 install -m 755 "$PROJECT_ROOT/scripts/claude-status.sh" "$APP/Contents/Resources/scripts/claude-status.sh"
 install -m 755 "$PROJECT_ROOT/scripts/status.js" "$APP/Contents/Resources/scripts/status.js"
